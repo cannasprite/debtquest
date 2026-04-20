@@ -121,9 +121,48 @@
 
     </div>
 
-    <!-- ═══════════ SUMMON TAB (placeholder) ═══════════ -->
+    <!-- ═══════════ SUMMON TAB ═══════════ -->
     <div id="tab-summon" class="tab-panel">
-      <div class="coming-soon">⚡ SUMMON — coming next</div>
+
+      <div id="summon-wrap">
+        <div class="codex-heading">⚡ SUMMON A NEW MONSTER</div>
+        <p id="summon-intro">Got a new debt? Name it, claim it, slay it.</p>
+
+        <form id="summon-form">
+          <div class="field">
+            <label for="s-name">Debt name / monster name</label>
+            <input id="s-name" type="text" placeholder="e.g. Medical Bill Wraith" required>
+          </div>
+          <div class="field">
+            <label for="s-amount">Amount owed ($)</label>
+            <input id="s-amount" type="number" min="0.01" step="0.01" placeholder="0.00" required>
+          </div>
+          <div class="field">
+            <label for="s-floor">Floor <span id="floor-auto-note">(auto-suggested from amount)</span></label>
+            <select id="s-floor">
+              <option value="1">Floor 1 — Goblin Warren  (under $500)</option>
+              <option value="2">Floor 2 — Imp Lair       ($500–$2,000)</option>
+              <option value="3">Floor 3 — Troll Bridge   ($2,000+)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="s-type">Monster type</label>
+            <select id="s-type">
+              <option value="goblin">Goblin</option>
+              <option value="specter">Specter</option>
+              <option value="phantom">Phantom</option>
+              <option value="imp">Imp</option>
+              <option value="troll">Troll</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="s-notes">Notes (optional)</label>
+            <textarea id="s-notes" placeholder="Who do you owe? Interest rate? Any context?"></textarea>
+          </div>
+          <button type="submit" id="summon-btn">⚡ SUMMON MONSTER</button>
+        </form>
+      </div>
+
     </div>
 
   </div><!-- /#app -->

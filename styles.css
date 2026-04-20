@@ -645,3 +645,73 @@ body::before {
 .ledger-paid { color: var(--green); white-space: nowrap; }
 .ledger-rem  { color: var(--red);   white-space: nowrap; min-width: 70px; text-align: right; }
 .ledger-row.defeated .ledger-rem { color: var(--green); }
+
+/* ── SUMMON FORM ── */
+#summon-wrap {
+  background: var(--panel);
+  border: 2px solid var(--border);
+  padding: 14px;
+}
+
+#summon-intro {
+  font-size: 7px;
+  color: var(--dim);
+  margin-bottom: 16px;
+}
+
+#summon-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 500px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field label {
+  font-size: 6px;
+  color: var(--dim);
+  letter-spacing: .5px;
+}
+
+#floor-auto-note {
+  color: #444;
+  font-size: 5px;
+}
+
+.field input,
+.field select,
+.field textarea {
+  background: var(--bg);
+  border: 2px solid var(--border);
+  color: var(--text);
+  padding: 8px;
+  font-family: var(--font);
+  font-size: 8px;
+  transition: border-color .1s;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus { outline: none; border-color: var(--gold); }
+
+.field select option { background: var(--card); }
+.field textarea { height: 56px; resize: vertical; }
+
+#summon-btn {
+  align-self: flex-start;
+  padding: 11px 16px;
+  background: var(--purple);
+  color: #fff;
+  border: 2px solid #6c3483;
+  font-family: var(--font);
+  font-size: 9px;
+  cursor: pointer;
+  transition: background .1s, transform .08s;
+}
+#summon-btn:hover  { background: #6c3483; }
+#summon-btn:active { transform: translateY(2px); }

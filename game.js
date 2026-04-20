@@ -858,6 +858,45 @@ function drawCastle(ctx, cx, groundY, reveal) {
 }
 
 // ── ACTIONS ───────────────────────────────────────────────────────────────────
+// ── SUMMON ────────────────────────────────────────────────────────────────────
+function handleSummon(e) {
+  e.preventDefault();
+
+  const name   = document.getElementById('s-name').value.trim();
+  const amount = parseFloat(document.getElementById('s-amount').value);
+  const floor  = parseInt(document.getElementById('s-floor').value);
+  const type   = document.getElementById('s-type').value;
+  const notes  = document.getElementById('s-notes').value.trim();
+
+  if (!name || !amount || amount <= 0) return;
+
+  const newDebt = {
+    id:       'custom_' + Date.now(),
+    name,
+    amount,
+    paid:     0,
+    floor,
+    type,
+    defeated: false,
+    taunts: [
+      `"${name} won't pay itself!"`,
+      '"You summoned me. Now deal with me."',
+      notes ? `"${notes}"` : '"Every day you wait, I grow stronger."',
+    ],
+  };
+
+  state.debts.push(newDebt);
+  e.target.reset();
+  document.getElementById('s-floor').value = '1';
+  save();
+
+  // Jump to the floor it was added to
+  addLog(`⚠ NEW MONSTER SUMMONED: ${name} (${fmt(amount)}) on Floor ${floor}!`, 'event');
+  switchTab('dungeon');
+  switchFloor(floor);
+  selectEnemy(newDebt.id);
+}
+
 function switchTab(name) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -904,6 +943,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('modal-close').addEventListener('click', () => {
     document.getElementById('modal-overlay').classList.add('hidden');
+  });
+
+  document.getElementById('summon-form').addEventListener('submit', handleSummon);
+
+  // Auto-suggest floor from amount
+  document.getElementById('s-amount').addEventListener('input', e => {
+    const v = parseFloat(e.target.value) || 0;
+    document.getElementById('s-floor').value = v < 500 ? '1' : v < 2000 ? '2' : '3';
   });
 
   // Welcome message on first load
