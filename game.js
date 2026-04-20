@@ -94,16 +94,83 @@ const TITLES = [
   { id: 'legend',   name: 'Debt Legend',       minXP: 8000, gear: 'Celestial Armor | Excalibur',      tier: 5 },
 ];
 
+// ── ACHIEVEMENTS ─────────────────────────────────────────────────────────────
+const ACHIEVEMENTS = [
+  { id: 'first_blood',  icon: '🗡️',  name: 'First Blood',       desc: 'Make your first payment' },
+  { id: 'century',      icon: '💯',  name: 'Century Club',       desc: 'Pay $100 in one attack' },
+  { id: 'big_hit',      icon: '💥',  name: 'Big Hit',            desc: 'Pay $500 in one attack' },
+  { id: 'goblin_slayer',icon: '👺',  name: 'Goblin Slayer',      desc: 'Defeat the Student Debt Goblin' },
+  { id: 'ghostbuster',  icon: '👻',  name: 'Ghostbuster',        desc: 'Clear all Floor 1 enemies' },
+  { id: 'sub2k',        icon: '💰',  name: 'Sub-2K Hero',        desc: 'Total remaining drops below $2,000' },
+  { id: 'imp_hunter',   icon: '😈',  name: 'Imp Hunter',         desc: 'Defeat both Credit Card Imps' },
+  { id: 'consistent',   icon: '⚔️',  name: 'Consistent Slayer',  desc: 'Make 10 total payments' },
+  { id: 'halfway',      icon: '🌗',  name: 'Halfway There',      desc: 'Pay off 50% of total debt' },
+  { id: 'credit_climb', icon: '📈',  name: 'Credit Climber',     desc: 'Credit score reaches 700' },
+  { id: 'troll_slayer', icon: '🧌',  name: 'Troll Slayer',       desc: 'Defeat the Car Loan Troll' },
+  { id: 'castle',       icon: '🏰',  name: 'Castle Claimed',     desc: 'Defeat every last debt' },
+];
+
+function checkAchievements() {
+  const score   = creditScore();
+  const total   = state.debts.reduce((s, d) => s + d.amount, 0);
+  const paidPct = total > 0 ? (state.totalPaid / total) * 100 : 0;
+  const rem     = state.debts.reduce((s, d) => s + Math.max(0, d.amount - d.paid), 0);
+
+  const conditions = {
+    first_blood:   () => state.totalPaid > 0,
+    century:       () => state.lastPayment >= 100,
+    big_hit:       () => state.lastPayment >= 500,
+    goblin_slayer: () => state.debts.find(d => d.id === 'student')?.defeated,
+    ghostbuster:   () => state.debts.filter(d => d.floor === 1).every(d => d.defeated),
+    sub2k:         () => rem < 2000 && rem > 0,
+    imp_hunter:    () => state.debts.filter(d => d.type === 'imp').every(d => d.defeated),
+    consistent:    () => state.paymentCount >= 10,
+    halfway:       () => paidPct >= 50,
+    credit_climb:  () => score >= 700,
+    troll_slayer:  () => state.debts.find(d => d.id === 'car')?.defeated,
+    castle:        () => state.debts.every(d => d.defeated),
+  };
+
+  const newOnes = [];
+  for (const ach of ACHIEVEMENTS) {
+    if (!state.achievements.includes(ach.id) && conditions[ach.id]?.()) {
+      state.achievements.push(ach.id);
+      newOnes.push(ach);
+    }
+  }
+  return newOnes;
+}
+
+function checkTitles() {
+  const newOnes = [];
+  for (const t of TITLES) {
+    if (!state.earnedTitles.includes(t.id) && state.xp >= t.minXP) {
+      state.earnedTitles.push(t.id);
+      newOnes.push(t);
+    }
+  }
+  // Auto-equip highest earned
+  const highest = [...TITLES].reverse().find(t => state.earnedTitles.includes(t.id));
+  if (highest && highest.id !== state.equippedTitle) {
+    state.equippedTitle = highest.id;
+  }
+  return newOnes;
+}
+
 // ── STATE ─────────────────────────────────────────────────────────────────────
 const state = {
-  debts:         JSON.parse(JSON.stringify(INITIAL_DEBTS)),
-  xp:            0,
-  totalPaid:     0,
-  currentFloor:  1,
-  activeEnemyId: 'student',
-  loot:          [],
-  log:           [],
-  lastPayment:   0,
+  debts:          JSON.parse(JSON.stringify(INITIAL_DEBTS)),
+  xp:             0,
+  totalPaid:      0,
+  paymentCount:   0,
+  currentFloor:   1,
+  activeEnemyId:  'student',
+  loot:           [],
+  log:            [],
+  lastPayment:    0,
+  achievements:   [],
+  earnedTitles:   ['squire'],
+  equippedTitle:  'squire',
 };
 
 // ── PERSISTENCE ───────────────────────────────────────────────────────────────
@@ -114,11 +181,15 @@ function save() {
     debts:         state.debts,
     xp:            state.xp,
     totalPaid:     state.totalPaid,
+    paymentCount:  state.paymentCount,
     currentFloor:  state.currentFloor,
     activeEnemyId: state.activeEnemyId,
     loot:          state.loot,
     log:           state.log.slice(0, 30),
     lastPayment:   state.lastPayment,
+    achievements:  state.achievements,
+    earnedTitles:  state.earnedTitles,
+    equippedTitle: state.equippedTitle,
   }));
 }
 
@@ -337,6 +408,7 @@ function attack() {
   // Apply damage
   state.lastPayment  = amount;
   state.totalPaid   += amount;
+  state.paymentCount++;
   enemy.paid         = Math.min(enemy.amount, enemy.paid + effective);
 
   // XP: 1 per dollar + event bonus
@@ -370,12 +442,15 @@ function attack() {
     addLog(`+50 KILL BONUS XP`, 'loot');
   }
 
+  const newAchs    = checkAchievements();
+  const newTitles  = checkTitles();
+
   input.value = '';
   save();
   render();
 
-  if (defeated) {
-    setTimeout(() => showModal(defeated), 500);
+  if (defeated || newAchs.length || newTitles.length) {
+    setTimeout(() => showModal(defeated, newAchs, newTitles), 500);
   }
 }
 
@@ -389,15 +464,39 @@ function floatDamage(text) {
   setTimeout(() => el.remove(), 950);
 }
 
-function showModal(defeated) {
-  document.getElementById('modal-icon').textContent  = '💀';
-  document.getElementById('modal-title').textContent = 'ENEMY DEFEATED!';
-  const loot = state.loot.find(l => l.from === defeated.name);
-  document.getElementById('modal-body').innerHTML = `
-    <p>${defeated.name} has been slain!</p>
-    ${loot ? `<p style="color:var(--purple);margin-top:8px">🎁 LOOT: ${loot.item}</p>` : ''}
-    <p style="color:var(--gold);margin-top:8px">+50 Kill Bonus XP</p>
-  `;
+function showModal(defeated, newAchs = [], newTitles = []) {
+  const hasDefeat = !!defeated;
+  const hasAchs   = newAchs.length > 0;
+  const hasTitles = newTitles.length > 0;
+
+  document.getElementById('modal-icon').textContent =
+    hasDefeat ? '💀' : hasAchs ? '🏆' : '👑';
+  document.getElementById('modal-title').textContent =
+    hasDefeat ? 'ENEMY DEFEATED!' : hasAchs ? 'ACHIEVEMENT UNLOCKED!' : 'NEW TITLE!';
+
+  let html = '';
+  if (hasDefeat) {
+    const loot = state.loot.find(l => l.from === defeated.name);
+    html += `<p>${defeated.name} has been slain!</p>`;
+    if (loot) html += `<p style="color:var(--purple);margin-top:6px">🎁 LOOT: ${loot.item}</p>`;
+    html += `<p style="color:var(--gold);margin-top:6px">+50 Kill Bonus XP</p>`;
+  }
+  if (hasAchs) {
+    if (html) html += `<hr style="border-color:var(--border);margin:10px 0">`;
+    newAchs.forEach(a => {
+      html += `<p>${a.icon} <span style="color:var(--gold)">${a.name}</span></p>`;
+      html += `<p style="color:var(--dim);font-size:6px;margin-bottom:6px">${a.desc}</p>`;
+    });
+  }
+  if (hasTitles) {
+    if (html) html += `<hr style="border-color:var(--border);margin:10px 0">`;
+    newTitles.forEach(t => {
+      html += `<p>👑 NEW TITLE: <span style="color:var(--purple)">${t.name}</span></p>`;
+      html += `<p style="color:var(--dim);font-size:6px;margin-bottom:6px">${t.gear}</p>`;
+    });
+  }
+
+  document.getElementById('modal-body').innerHTML = html;
   document.getElementById('modal-overlay').classList.remove('hidden');
 }
 
@@ -496,6 +595,86 @@ function renderRoster() {
   roster.querySelectorAll('.enemy-card:not(.defeated)').forEach(card => {
     card.addEventListener('click', () => selectEnemy(card.dataset.id));
   });
+}
+
+// ── CODEX RENDERER ───────────────────────────────────────────────────────────
+function renderCodex() {
+  renderAchievements();
+  renderTitles();
+  renderLoot();
+  renderLedger();
+}
+
+function renderAchievements() {
+  const el = document.getElementById('achievements-grid');
+  if (!el) return;
+  el.innerHTML = ACHIEVEMENTS.map(a => {
+    const unlocked = state.achievements.includes(a.id);
+    return `
+      <div class="ach-card ${unlocked ? 'unlocked' : 'locked'}">
+        <span class="ach-icon">${a.icon}</span>
+        <div class="ach-name">${a.name}</div>
+        <div class="ach-desc">${a.desc}</div>
+        ${unlocked ? '<div class="ach-check">✓</div>' : ''}
+      </div>`;
+  }).join('');
+}
+
+function renderTitles() {
+  const el = document.getElementById('titles-list');
+  if (!el) return;
+  el.innerHTML = TITLES.map(t => {
+    const earned   = state.earnedTitles.includes(t.id);
+    const equipped = state.equippedTitle === t.id;
+    if (!earned) {
+      return `<div class="title-badge locked" title="Requires ${t.minXP} XP">??? (${t.minXP} XP)</div>`;
+    }
+    return `
+      <div class="title-badge ${equipped ? 'equipped' : 'earned'}"
+           onclick="equipTitle('${t.id}')" title="${t.gear}">
+        ${equipped ? '▶ ' : ''}${t.name}
+      </div>`;
+  }).join('');
+}
+
+function renderLoot() {
+  const el = document.getElementById('loot-list');
+  if (!el) return;
+  if (!state.loot.length) {
+    el.innerHTML = '<span class="empty-msg">No loot yet — defeat enemies to earn drops!</span>';
+    return;
+  }
+  el.innerHTML = state.loot.map(l =>
+    `<div class="loot-item" title="From: ${l.from}">🎁 ${l.item}</div>`
+  ).join('');
+}
+
+function renderLedger() {
+  const el = document.getElementById('ledger-rows');
+  if (!el) return;
+  const total = state.debts.reduce((s, d) => s + d.amount, 0);
+  el.innerHTML = state.debts.map(d => {
+    const rem = Math.max(0, d.amount - d.paid);
+    const pct = Math.min(100, (d.paid / d.amount) * 100);
+    return `
+      <div class="ledger-row ${d.defeated ? 'defeated' : ''}">
+        <div class="ledger-name">${d.name}</div>
+        <div class="ledger-bar-wrap">
+          <div class="ledger-bar-fill" style="width:${pct}%"></div>
+        </div>
+        <div class="ledger-paid">${fmt(d.paid)} paid</div>
+        <div class="ledger-rem">${d.defeated ? '✓ DONE' : fmt(rem) + ' left'}</div>
+      </div>`;
+  }).join('');
+}
+
+function equipTitle(id) {
+  if (!state.earnedTitles.includes(id)) return;
+  state.equippedTitle = id;
+  save();
+  renderHeader();
+  renderHero();
+  renderTitles();
 }
 
 // ── CASTLE RENDERER ──────────────────────────────────────────────────────────
@@ -685,6 +864,7 @@ function switchTab(name) {
   document.getElementById(`tab-${name}`).classList.add('active');
   document.querySelector(`.tab-btn[data-tab="${name}"]`).classList.add('active');
   if (name === 'castle') renderCastle();
+  if (name === 'codex')  renderCodex();
 }
 
 function selectEnemy(id) {

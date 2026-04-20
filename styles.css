@@ -546,3 +546,102 @@ body::before {
   border-color: var(--gold);
   color: var(--gold);
 }
+
+/* ── CODEX ── */
+.codex-section {
+  background: var(--panel);
+  border: 2px solid var(--border);
+  padding: 12px;
+}
+
+.codex-heading {
+  font-size: 8px;
+  color: var(--gold);
+  letter-spacing: 1px;
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+#achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 6px;
+}
+
+.ach-card {
+  background: var(--card);
+  border: 2px solid var(--border);
+  padding: 8px;
+  position: relative;
+}
+.ach-card.unlocked { border-color: var(--gold); }
+.ach-card.locked   { opacity: .35; filter: grayscale(1); }
+
+.ach-icon  { font-size: 20px; display: block; margin-bottom: 5px; }
+.ach-name  { font-size: 6px; color: var(--gold); margin-bottom: 3px; }
+.ach-desc  { font-size: 5px; color: var(--dim); line-height: 1.8; }
+.ach-check { position: absolute; top: 5px; right: 6px; color: var(--green); font-size: 9px; }
+
+#titles-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.title-badge {
+  padding: 6px 10px;
+  font-size: 7px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all .1s;
+}
+.title-badge.earned   { color: var(--purple); border-color: var(--purple); }
+.title-badge.equipped { background: var(--purple); color: #fff; border-color: var(--purple); }
+.title-badge.locked   { color: #333; border-color: #222; cursor: default; font-size: 6px; }
+.title-badge.earned:hover { background: rgba(142,68,173,.15); }
+
+#loot-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.loot-item {
+  font-size: 6px;
+  padding: 4px 8px;
+  border: 1px solid var(--gold-dim);
+  color: var(--gold);
+}
+
+.empty-msg { font-size: 6px; color: var(--dim); }
+
+#ledger-rows { display: flex; flex-direction: column; gap: 5px; }
+
+.ledger-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 6px 8px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  font-size: 6px;
+}
+.ledger-row.defeated { opacity: .5; }
+
+.ledger-name { flex: 1; min-width: 140px; color: var(--text); font-size: 6px; }
+
+.ledger-bar-wrap {
+  flex: 2;
+  min-width: 80px;
+  height: 6px;
+  background: #111;
+  border: 1px solid #222;
+  overflow: hidden;
+}
+.ledger-bar-fill { height: 100%; background: var(--green); transition: width .4s; }
+
+.ledger-paid { color: var(--green); white-space: nowrap; }
+.ledger-rem  { color: var(--red);   white-space: nowrap; min-width: 70px; text-align: right; }
+.ledger-row.defeated .ledger-rem { color: var(--green); }
