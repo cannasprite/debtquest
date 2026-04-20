@@ -22,64 +22,93 @@
       </div>
     </header>
 
-    <!-- FLOOR NAV -->
-    <nav id="floor-nav">
-      <button class="floor-btn active" data-floor="1">F1: GOBLIN WARREN</button>
-      <button class="floor-btn" data-floor="2">F2: IMP LAIR</button>
-      <button class="floor-btn" data-floor="3">F3: TROLL BRIDGE</button>
+    <!-- TAB NAV -->
+    <nav id="tab-nav">
+      <button class="tab-btn active" data-tab="dungeon">⚔ DUNGEON</button>
+      <button class="tab-btn" data-tab="castle">🏰 CASTLE</button>
+      <button class="tab-btn" data-tab="codex">📜 CODEX</button>
+      <button class="tab-btn" data-tab="summon">＋ SUMMON</button>
     </nav>
 
-    <!-- BATTLE ARENA -->
-    <div id="battle-arena">
+    <!-- ═══════════ DUNGEON TAB ═══════════ -->
+    <div id="tab-dungeon" class="tab-panel active">
 
-      <!-- Hero side -->
-      <div id="hero-panel">
-        <div id="hero-sprite"></div>
-        <div id="hero-name">SPRITE</div>
-        <div id="hero-gear">Cloth Armor | Wooden Sword</div>
-        <div id="xp-bar-wrap">
-          <div id="xp-bar-track"><div id="xp-bar"></div></div>
-          <span id="xp-bar-label">0 / 100 XP</span>
+      <nav id="floor-nav">
+        <button class="floor-btn active" data-floor="1">F1: GOBLIN WARREN</button>
+        <button class="floor-btn" data-floor="2">F2: IMP LAIR</button>
+        <button class="floor-btn" data-floor="3">F3: TROLL BRIDGE</button>
+      </nav>
+
+      <div id="battle-arena">
+        <div id="hero-panel">
+          <div id="hero-sprite"></div>
+          <div id="hero-name">SPRITE</div>
+          <div id="hero-gear">Cloth Armor | Wooden Sword</div>
+          <div id="xp-bar-wrap">
+            <div id="xp-bar-track"><div id="xp-bar"></div></div>
+            <span id="xp-bar-label">0 / 100 XP</span>
+          </div>
+        </div>
+        <div id="vs-col"><div id="vs-text">VS</div></div>
+        <div id="enemy-panel">
+          <div id="enemy-sprite"></div>
+          <div id="enemy-name">—</div>
+          <div id="enemy-hp-wrap">
+            <div id="enemy-hp-track"><div id="enemy-hp-bar"></div></div>
+            <div id="enemy-hp-text">select an enemy</div>
+          </div>
+          <div id="enemy-taunt" class="taunt-box">"..."</div>
         </div>
       </div>
 
-      <!-- VS -->
-      <div id="vs-col">
-        <div id="vs-text">VS</div>
-      </div>
+      <div id="enemy-roster"></div>
 
-      <!-- Enemy side -->
-      <div id="enemy-panel">
-        <div id="enemy-sprite"></div>
-        <div id="enemy-name">—</div>
-        <div id="enemy-hp-wrap">
-          <div id="enemy-hp-track"><div id="enemy-hp-bar"></div></div>
-          <div id="enemy-hp-text">select an enemy</div>
+      <div id="combat-panel">
+        <div id="combat-log"></div>
+        <div id="attack-row">
+          <div id="attack-input-col">
+            <label for="payment-input">PAYMENT AMOUNT ($)</label>
+            <input type="number" id="payment-input" min="0.01" step="0.01" placeholder="0.00">
+          </div>
+          <button id="attack-btn">⚔ ATTACK!</button>
         </div>
-        <div id="enemy-taunt" class="taunt-box">"..."</div>
+        <div id="attack-hint">Enter a real payment → deal that much damage</div>
       </div>
 
+    </div><!-- /tab-dungeon -->
+
+    <!-- ═══════════ CASTLE TAB ═══════════ -->
+    <div id="tab-castle" class="tab-panel">
+
+      <div id="castle-wrap">
+        <canvas id="castle-canvas"></canvas>
+        <div id="castle-info">
+          <div id="castle-score-line">
+            CREDIT SCORE: <span id="castle-score">600</span> / 760
+          </div>
+          <div id="castle-prog-wrap">
+            <div id="castle-prog-bar"></div>
+          </div>
+          <div id="castle-status-text">The castle is shrouded in fog...</div>
+          <div id="castle-milestones"></div>
+        </div>
+      </div>
+
+    </div><!-- /tab-castle -->
+
+    <!-- ═══════════ CODEX TAB (placeholder) ═══════════ -->
+    <div id="tab-codex" class="tab-panel">
+      <div class="coming-soon">📜 CODEX — coming next</div>
     </div>
 
-    <!-- ENEMY ROSTER -->
-    <div id="enemy-roster"></div>
-
-    <!-- COMBAT PANEL -->
-    <div id="combat-panel">
-      <div id="combat-log"></div>
-      <div id="attack-row">
-        <div id="attack-input-col">
-          <label for="payment-input">PAYMENT AMOUNT ($)</label>
-          <input type="number" id="payment-input" min="0.01" step="0.01" placeholder="0.00">
-        </div>
-        <button id="attack-btn">⚔ ATTACK!</button>
-      </div>
-      <div id="attack-hint">Enter a real payment → deal that much damage</div>
+    <!-- ═══════════ SUMMON TAB (placeholder) ═══════════ -->
+    <div id="tab-summon" class="tab-panel">
+      <div class="coming-soon">⚡ SUMMON — coming next</div>
     </div>
 
-  </div>
+  </div><!-- /#app -->
 
-  <!-- VICTORY / EVENT MODAL -->
+  <!-- MODAL -->
   <div id="modal-overlay" class="hidden">
     <div id="modal-box">
       <div id="modal-icon"></div>

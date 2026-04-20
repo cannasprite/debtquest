@@ -85,6 +85,41 @@ body::before {
 }
 .stats-block strong { color: var(--gold); }
 
+/* ── TAB NAV ── */
+#tab-nav {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  flex: 1;
+  min-width: 90px;
+  padding: 8px 10px;
+  background: var(--card);
+  color: var(--dim);
+  border: 2px solid var(--border);
+  font-family: var(--font);
+  font-size: 7px;
+  cursor: pointer;
+  transition: all 0.1s;
+  text-align: center;
+}
+.tab-btn:hover  { color: var(--text); border-color: var(--dim); }
+.tab-btn.active { background: var(--gold); color: var(--bg); border-color: var(--gold); }
+
+.tab-panel { display: none; flex-direction: column; gap: 8px; }
+.tab-panel.active { display: flex; }
+
+.coming-soon {
+  padding: 40px;
+  text-align: center;
+  color: var(--dim);
+  font-size: 8px;
+  border: 2px solid var(--border);
+  background: var(--panel);
+}
+
 /* ── FLOOR NAV ── */
 #floor-nav {
   display: flex;
@@ -438,3 +473,76 @@ body::before {
 }
 
 .taunt-box { transition: opacity .3s; }
+
+/* ── CASTLE ── */
+#castle-wrap {
+  background: var(--panel);
+  border: 2px solid var(--border);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+#castle-canvas {
+  display: block;
+  width: 100%;
+  max-width: 700px;
+  height: 320px;
+  margin: 0 auto;
+  image-rendering: pixelated;
+  border: 1px solid var(--border);
+  cursor: default;
+}
+
+#castle-info { text-align: center; }
+
+#castle-score-line {
+  font-size: 8px;
+  color: var(--dim);
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+}
+#castle-score-line span { color: #5dade2; }
+
+#castle-prog-wrap {
+  width: 70%;
+  max-width: 420px;
+  height: 18px;
+  background: #0a0a14;
+  border: 2px solid var(--border);
+  margin: 0 auto 10px;
+  overflow: hidden;
+}
+
+#castle-prog-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #2980b9, #8e44ad);
+  transition: width 0.7s ease;
+  width: 0%;
+}
+
+#castle-status-text {
+  font-size: 7px;
+  color: var(--dim);
+  margin-bottom: 14px;
+}
+
+#castle-milestones {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.milestone {
+  font-size: 6px;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  color: var(--dim);
+}
+.milestone.reached {
+  border-color: var(--gold);
+  color: var(--gold);
+}

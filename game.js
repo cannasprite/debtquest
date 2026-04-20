@@ -498,7 +498,195 @@ function renderRoster() {
   });
 }
 
+// ── CASTLE RENDERER ──────────────────────────────────────────────────────────
+const MILESTONES = [
+  { score: 620, label: 'Turrets appear',    pct: 0.125 },
+  { score: 640, label: 'Walls emerge',      pct: 0.25  },
+  { score: 660, label: 'Windows glow',      pct: 0.375 },
+  { score: 680, label: 'Gates visible',     pct: 0.50  },
+  { score: 700, label: 'Drawbridge lowers', pct: 0.625 },
+  { score: 720, label: 'Banners raised',    pct: 0.75  },
+  { score: 740, label: 'Moat revealed',     pct: 0.875 },
+  { score: 760, label: '🏰 CASTLE CLAIMED', pct: 1.0   },
+];
+
+function creditScore() {
+  const total = state.debts.reduce((s, d) => s + d.amount, 0);
+  const pct   = total > 0 ? state.totalPaid / total : 0;
+  return Math.round(600 + pct * 160);
+}
+
+function renderCastle() {
+  const canvas = document.getElementById('castle-canvas');
+  if (!canvas) return;
+
+  const W = canvas.width  = canvas.offsetWidth  || 700;
+  const H = canvas.height = canvas.offsetHeight || 320;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+
+  const score   = creditScore();
+  const reveal  = Math.max(0, Math.min(1, (score - 600) / 160)); // 0..1
+
+  // ── Sky ──
+  const sky = ctx.createLinearGradient(0, 0, 0, H * 0.72);
+  sky.addColorStop(0, '#04040f');
+  sky.addColorStop(1, '#0e0e2a');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, W, H * 0.72);
+
+  // ── Stars (more appear as fog lifts) ──
+  const starCount = Math.floor(20 + reveal * 80);
+  ctx.fillStyle = '#ffffff';
+  for (let i = 0; i < starCount; i++) {
+    const sx   = ((i * 173.7) % W);
+    const sy   = ((i * 97.3)  % (H * 0.65));
+    const size = i % 5 === 0 ? 2 : 1;
+    ctx.globalAlpha = 0.4 + (i % 3) * 0.2;
+    ctx.fillRect(Math.floor(sx), Math.floor(sy), size, size);
+  }
+  ctx.globalAlpha = 1;
+
+  // Moon (appears at 50% reveal)
+  if (reveal > 0.5) {
+    ctx.globalAlpha = (reveal - 0.5) * 2;
+    ctx.fillStyle = '#fffde7';
+    ctx.beginPath();
+    ctx.arc(W * 0.82, H * 0.12, 18, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#0e0e2a';
+    ctx.beginPath();
+    ctx.arc(W * 0.82 + 6, H * 0.12, 14, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  // ── Ground ──
+  const ground = ctx.createLinearGradient(0, H * 0.72, 0, H);
+  ground.addColorStop(0, '#111a0f');
+  ground.addColorStop(1, '#080d08');
+  ctx.fillStyle = ground;
+  ctx.fillRect(0, H * 0.72, W, H * 0.28);
+
+  // Moat (appears at 87.5% reveal)
+  if (reveal > 0.875) {
+    ctx.globalAlpha = (reveal - 0.875) * 8;
+    ctx.fillStyle = '#1a3a5a';
+    ctx.fillRect(W/2 - 90, H * 0.72 - 6, 180, 8);
+    ctx.globalAlpha = 1;
+  }
+
+  // ── Pixel castle (drawn centered, bottom-anchored) ──
+  drawCastle(ctx, W / 2, H * 0.72, reveal);
+
+  // ── Fog overlay (burns away from center outward) ──
+  if (reveal < 1) {
+    const fogDense = 1 - reveal;
+    const fog = ctx.createRadialGradient(W/2, H * 0.45, 0, W/2, H * 0.45, W * 0.55);
+    fog.addColorStop(0,   `rgba(8,8,20,${fogDense * 0.15})`);
+    fog.addColorStop(0.4, `rgba(8,8,20,${fogDense * 0.65})`);
+    fog.addColorStop(1,   `rgba(8,8,20,${fogDense * 0.97})`);
+    ctx.fillStyle = fog;
+    ctx.fillRect(0, 0, W, H);
+
+    // Fog text
+    if (fogDense > 0.6) {
+      ctx.globalAlpha = Math.min(1, (fogDense - 0.6) * 2.5);
+      ctx.fillStyle   = '#4a4a7a';
+      ctx.font        = '9px monospace';
+      ctx.textAlign   = 'center';
+      ctx.fillText('~ SHROUDED IN DEBT FOG ~', W / 2, H / 2);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // ── Info panel ──
+  document.getElementById('castle-score').textContent = score;
+  const pct = ((score - 600) / 160) * 100;
+  document.getElementById('castle-prog-bar').style.width = Math.min(100, pct) + '%';
+
+  const statuses = [
+    [0,    'The castle is completely shrouded in fog...'],
+    [0.12, 'Distant turrets emerge from the mist...'],
+    [0.25, 'The castle walls come into view...'],
+    [0.5,  'Windows flicker with warm light...'],
+    [0.75, 'Almost there — the drawbridge is visible!'],
+    [0.99, '🏰 YOUR CASTLE AWAITS, DEBT SLAYER!'],
+  ];
+  const status = [...statuses].reverse().find(([t]) => reveal >= t);
+  document.getElementById('castle-status-text').textContent = status[1];
+
+  // Milestones
+  document.getElementById('castle-milestones').innerHTML = MILESTONES.map(m =>
+    `<div class="milestone ${score >= m.score ? 'reached' : ''}">${m.label} (${m.score})</div>`
+  ).join('');
+}
+
+function drawCastle(ctx, cx, groundY, reveal) {
+  const S = 5; // pixel scale
+  ctx.globalAlpha = Math.min(1, reveal * 1.5); // fade in
+
+  function px(col, row, w, h, color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(
+      Math.floor(cx + col * S),
+      Math.floor(groundY - (row + h) * S),
+      w * S, h * S
+    );
+  }
+
+  const stone = '#4a4a6a', dark = '#2e2e4e', lit = '#ffd700',
+        flag  = '#cc0000', batt = '#3a3a5a', roof = '#333355';
+
+  // Left outer tower
+  px(-20, 0, 6, 14, dark);
+  px(-20,14, 2,  2, batt); px(-17,14, 2, 2, batt); px(-14,14, 2, 2, batt);
+  if (reveal > 0.3) px(-18, 7, 2, 3, lit);
+  if (reveal > 0.75) { px(-20,16, 1, 3, '#8B6914'); px(-19,18, 3, 2, flag); }
+
+  // Left wing wall
+  px(-14, 0, 8, 10, dark);
+  px(-14,10, 2,  2, batt); px(-11,10, 2, 2, batt); px(-8,10, 2, 2, batt);
+  if (reveal > 0.25) px(-12, 4, 2, 3, lit);
+
+  // Main center tower
+  px(-5, 0, 10, 18, stone);
+  px(-5,18, 2,  2, batt); px(-2,18, 2, 2, batt); px(1,18, 2, 2, batt); px(3,18, 2, 2, batt);
+  if (reveal > 0.12) px(-1, 6, 2, 4, lit);
+  if (reveal > 0.12) px(-1,12, 2, 4, lit);
+  if (reveal > 0.75) { px(0,20, 1, 4, '#8B6914'); px(1,22, 4, 2, flag); }
+
+  // Right wing wall
+  px(6, 0, 8, 10, dark);
+  px(6, 10, 2, 2, batt); px(9,10, 2, 2, batt); px(12,10, 2, 2, batt);
+  if (reveal > 0.25) px(8, 4, 2, 3, lit);
+
+  // Right outer tower
+  px(14, 0, 6, 14, dark);
+  px(14,14, 2, 2, batt); px(17,14, 2, 2, batt); px(19,14, 2, 2, batt);
+  if (reveal > 0.3) px(16, 7, 2, 3, lit);
+  if (reveal > 0.75) { px(19,16, 1, 3, '#8B6914'); px(19,18, 3, 2, flag); }
+
+  // Gate arch (appears at 50%)
+  if (reveal > 0.5) {
+    ctx.globalAlpha = Math.min(1, (reveal - 0.5) * 3);
+    px(-2, 0, 4, 5, '#8B6914');   // gate frame
+    px(-1, 0, 2, 4, '#1a0a00');   // gate darkness
+    ctx.globalAlpha = Math.min(1, reveal * 1.5);
+  }
+
+  ctx.globalAlpha = 1;
+}
+
 // ── ACTIONS ───────────────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`tab-${name}`).classList.add('active');
+  document.querySelector(`.tab-btn[data-tab="${name}"]`).classList.add('active');
+  if (name === 'castle') renderCastle();
+}
+
 function selectEnemy(id) {
   const enemy = state.debts.find(d => d.id === id);
   if (!enemy || enemy.defeated) return;
@@ -523,6 +711,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.querySelectorAll('.floor-btn').forEach(btn => {
     btn.addEventListener('click', () => switchFloor(parseInt(btn.dataset.floor)));
+  });
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
   });
 
   document.getElementById('attack-btn').addEventListener('click', attack);
