@@ -229,48 +229,283 @@ function getNextTitle(xp) {
 }
 
 // ── PIXEL-ART SVG SPRITES ─────────────────────────────────────────────────────
-function buildSVG(pixels, cols, rows, scale = 4) {
-  const W = cols * scale, H = rows * scale;
-  const rects = pixels.map(([c, r, color]) =>
-    `<rect x="${c*scale}" y="${r*scale}" width="${scale}" height="${scale}" fill="${color}"/>`
-  ).join('');
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="image-rendering:pixelated">${rects}</svg>`;
+// String-row engine: each row is a string, each char maps to a color via palette.
+// '.' = transparent. All rows may differ in length (trailing transparent).
+function spr(rows, pal, scale = 5) {
+  const H = rows.length;
+  const W = Math.max(...rows.map(r => r.length));
+  const rects = [];
+  for (let r = 0; r < H; r++) {
+    for (let c = 0; c < rows[r].length; c++) {
+      const col = pal[rows[r][c]];
+      if (col) rects.push(`<rect x="${c*scale}" y="${r*scale}" width="${scale}" height="${scale}" fill="${col}"/>`);
+    }
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W*scale} ${H*scale}" width="${W*scale}" height="${H*scale}" style="image-rendering:pixelated;display:block">${rects.join('')}</svg>`;
 }
 
+// ── HERO (12 wide × 26 tall, scale 5 = 60×130px) ────────────────────────────
 function heroSVG(tier) {
-  const P = [
-    { A: '#8B7355', sw: '#A0A0A0', ac: '#D4A574', hm: '#3A2A1A' },
-    { A: '#7B5A1A', sw: '#C8C8C8', ac: '#D4A574', hm: '#7B5A1A' },
-    { A: '#909090', sw: '#E0E0E0', ac: '#B0B0C0', hm: '#808090' },
-    { A: '#607080', sw: '#FFD700', ac: '#708090', hm: '#506070' },
-    { A: '#4A3A7A', sw: '#FF6060', ac: '#6A5AAA', hm: '#3A2A6A' },
-    { A: '#DAA520', sw: '#FFFFFF', ac: '#FFF080', hm: '#B8860B' },
+  // Per-tier color palette
+  const T = [
+    { A:'#9B8060', a:'#6B5030', W:'#A8A8A8', w:'#686868', H:'#3A2A12', h:'#5A4020', cp:null    }, // 0 cloth
+    { A:'#8B6010', a:'#5A3A00', W:'#C0C0C0', w:'#808080', H:'#8B6010', h:'#5A3A00', cp:null    }, // 1 leather
+    { A:'#9090A0', a:'#606070', W:'#E8E8E8', w:'#A0A0B0', H:'#808090', h:'#505060', cp:null    }, // 2 chain
+    { A:'#6080A0', a:'#405060', W:'#FFD700', w:'#CC9900', H:'#506070', h:'#304050', cp:'#506070'}, // 3 plate
+    { A:'#503090', a:'#301860', W:'#FF5050', w:'#CC1010', H:'#401880', h:'#200840', cp:'#8B0000'}, // 4 dragon
+    { A:'#D4A800', a:'#906000', W:'#FFFFFF', w:'#DDDDDD', H:'#C08000', h:'#806000', cp:'#8B6914'}, // 5 legend
   ][Math.min(tier, 5)];
-  const sk = '#FDBCB4', ey = '#1a1a1a', pa = '#2A2A6A', bl = '#5A3A10';
-  const px = [
-    [6,1,sk],[7,1,sk],[8,1,sk],[9,1,sk],
-    [6,2,sk],[7,2,sk],[8,2,sk],[9,2,sk],
-    [6,3,sk],[7,3,ey],[8,3,ey],[9,3,sk],
-    [6,4,sk],[7,4,sk],[8,4,sk],[9,4,sk],
-    [6,0,P.hm],[7,0,P.hm],[8,0,P.hm],[9,0,P.hm],
-    ...(tier>=1?[[5,1,P.hm],[10,1,P.hm],[5,2,P.hm],[10,2,P.hm]]:[]),
-    [5,5,P.A],[6,5,P.A],[7,5,P.A],[8,5,P.A],[9,5,P.A],[10,5,P.A],
-    [5,6,P.A],[6,6,P.A],[7,6,P.A],[8,6,P.A],[9,6,P.A],[10,6,P.A],
-    [5,7,P.A],[6,7,P.A],[7,7,P.A],[8,7,P.A],[9,7,P.A],[10,7,P.A],
-    [5,8,P.A],[6,8,P.A],[7,8,P.A],[8,8,P.A],[9,8,P.A],[10,8,P.A],
-    [5,9,bl],[6,9,bl],[7,9,bl],[8,9,bl],[9,9,bl],[10,9,bl],
-    [6,10,pa],[7,10,pa],[8,10,P.A],[9,10,P.A],
-    [6,11,pa],[7,11,pa],[8,11,P.A],[9,11,P.A],
-    [6,12,pa],[7,12,pa],[8,12,P.A],[9,12,P.A],
-    [6,13,P.ac],[7,13,P.ac],[8,13,P.ac],[9,13,P.ac],
-    [6,14,P.ac],[7,14,P.ac],[8,14,P.ac],[9,14,P.ac],
-    [11,4,P.sw],[11,5,P.sw],[11,6,P.sw],[11,7,P.sw],[11,8,P.sw],
-    [10,7,bl],[12,7,bl],
-    ...(tier>=2?[[3,6,P.ac],[4,6,P.ac],[3,7,P.ac],[4,7,P.ac],[3,8,P.ac],[4,8,P.ac]]:[]),
-    ...(tier>=4?[[4,5,'#8B0000'],[4,6,'#8B0000'],[4,7,'#8B0000'],[4,8,'#8B0000'],[4,9,'#8B0000']]:[]),
-    ...(tier>=5?[[11,3,P.sw],[11,9,P.sw],[13,7,'#FFFAAA']]:[]),
+
+  const SK='#FDBCB4', sk='#D8907A', EY='#222222';
+  const PA='#2A2A70', pa='#18185A';
+  const BT=T.a,       bl='#4A2A08';
+
+  const rows = [
+    // helmet / hair
+    tier===0
+      ? `....${T.H}${T.H}${T.H}${T.H}....`
+      : `...${T.H}${T.H}${T.H}${T.H}${T.H}${T.H}...`,
+    tier>=1
+      ? `..${T.H}${SK}${SK}${SK}${SK}${SK}${SK}${T.H}..`
+      : `...${SK}${SK}${SK}${SK}${SK}${SK}....`,
+    // face row with eyes
+    tier>=1
+      ? `..${T.H}${SK}${sk}${EY}${SK}${EY}${sk}${SK}${T.H}..`
+      : `...${SK}${sk}${EY}${SK}${EY}${sk}${SK}....`,
+    // face
+    `....${SK}${SK}${SK}${SK}${SK}${SK}....`,
+    `....${sk}${SK}${SK}${SK}${SK}${sk}....`,
+    // neck
+    `....${SK}${SK}${SK}${SK}${SK}.....`,
+    // shoulders + torso
+    tier>=4
+      ? `..${T.cp}${T.A}${T.A}${T.A}${T.A}${T.A}${T.A}${T.cp}..`
+      : `...${T.A}${T.A}${T.A}${T.A}${T.A}${T.A}....`,
+    // sword on right, torso
+    `${T.W}..${T.A}${T.A}${T.A}${T.A}${T.A}${T.A}....`,
+    `${T.W}..${T.A}${T.A}${T.A}${T.A}${T.A}${T.A}....`,
+    `${T.w}${T.w}.${T.A}${bl}${bl}${bl}${bl}${T.A}....`,  // belt
+    // shield on left (tier 2+), torso continues
+    tier>=2
+      ? `..${T.a}${T.a}${T.A}${T.A}${T.A}${T.A}${T.A}.${T.W}.`
+      : `...${T.A}${T.A}${T.A}${T.A}${T.A}${T.A}.${T.W}.`,
+    tier>=2
+      ? `..${T.a}${T.a}${T.A}${T.A}${T.A}${T.A}${T.A}.${T.w}.`
+      : `...${T.A}${T.A}${T.A}${T.A}${T.A}${T.A}.${T.w}.`,
+    // legs
+    `....${PA}${PA}${T.A}${T.A}${PA}....`,
+    `....${PA}${PA}${T.A}${T.A}${PA}....`,
+    `....${pa}${PA}${pa}${pa}${PA}....`,
+    // boots
+    `....${BT}${BT}${BT}${BT}${BT}....`,
+    `....${BT}${BT}${BT}${BT}${BT}....`,
+    tier>=5
+      ? `...${T.W}${BT}${BT}${BT}${BT}${T.W}...`   // glowing boots at legend
+      : `....${BT}${BT}${BT}${BT}${BT}....`,
   ];
-  return buildSVG(px, 16, 16);
+
+  // Build from structured rows above - but let's use raw strings for clarity:
+  const heroRows = [
+    tier===0 ? '....HHHH....' : '...HHHHHH...',
+    tier>=1  ? '..HSSSSSSH..' : '...SSSSSS...',
+    tier>=1  ? '..HSsESEsH..' : '...SsESEs...',
+    '....SSSSSS....',
+    '....sSSSSs....',
+    '.....SSSS.....',
+    tier>=4  ? '..XAAAAAA X..' : '...AAAAAA...',
+    'W..AAAAAA....',
+    'W..AAAAAA....',
+    'ww.AbbbbbA...',
+    tier>=2  ? '..aaAAAAA.W.' : '...AAAAA..W.',
+    tier>=2  ? '..aaAAAAA.w.' : '...AAAAA..w.',
+    '....PPAPPPP..',
+    '....PPAPPPP..',
+    '....pPpppP...',
+    '....BBBBB....',
+    '....BBBBB....',
+    tier>=5  ? '...WBBBBBW..' : '....BBBBB....',
+  ];
+
+  const pal = {
+    S: SK, s: sk, E: EY,
+    H: T.H, h: T.h,
+    A: T.A, a: T.a,
+    W: T.W, w: T.w,
+    X: T.cp || T.A,
+    b: bl,
+    P: PA, p: pa,
+    B: BT,
+  };
+  return spr(heroRows, pal, 5);
+}
+
+// ── GOBLIN (20 wide × 20 tall) ───────────────────────────────────────────────
+function goblinSVG() {
+  const rows = [
+    '....gg........gg....',   // ear tips
+    '...gGGg......gGGg...',   // ears
+    '....GGGGGGGGGGGg....',   // head top
+    '...GGGGGGGGGGGGGg...',   // head
+    '...GGGeGGGGGeGGGg...',   // red eyes
+    '...GGGEGGGGGEGGGd...',   // eye glow
+    '...GGGGGyyGGGGGGd...',   // yellow nose
+    '...GGGGGGGGGGGGGd...',   // lower face
+    '...GkTkTkTkTGGGd....',   // teeth grin
+    '...GGGGGGGGGGGGd....',   // chin
+    '....cCCCCCCCCCcg....',   // clothes collar
+    '...cCCCCCCCCCCCCg...',   // body
+    '..wcCCCCCCCCCCCCw...',   // arms out w/ claws
+    '..wcCCCCCCCCCCCCw...',
+    '..wwcCCCCCCCCCcww...',   // claw spread
+    '....cCCCC..cCCCC....',   // legs
+    '....cCCCC..cCCCC....',
+    '....cCCCC..cCCCC....',
+    '....bbbbb..bbbbb....',   // boots
+    '...bbbbbb..bbbbbb...',
+  ];
+  return spr(rows, {
+    G:'#3ab03a', g:'#2a8a2a', d:'#1a5a1a',
+    e:'#ff3333', E:'#ff8800', y:'#ccaa00',
+    k:'#1a0000', T:'#ffe8c0',
+    C:'#8a5a30', c:'#5a3a10', b:'#3a2008',
+    w:'#f0e880',
+  });
+}
+
+// ── SPECTER (18 wide × 24 tall) ──────────────────────────────────────────────
+function specterSVG() {
+  const rows = [
+    '.......WW.........',   // wispy crown
+    '......WWWW........',
+    '.....WWWWWWW......',
+    '....WWWWWWWWWW....',
+    '....WwRwWWwRwW....',   // glowing red eyes
+    '....WWWwWWwWWW....',
+    '...WWWWWWWWWWWWW..',   // main body
+    '...WwWWWWWWWWWwW..',
+    '...WWWWwwwwWWWWW..',   // inner shadow
+    '....WWWWWWWWWWW...',
+    '....WwWWWWWWWwW...',
+    '.....WWWWWWWWW....',
+    '.....wWWWWWWwW....',
+    '......WWWWWWW.....',
+    '......wWwwWwW.....',   // wispy lower edge
+    '.......WwwwW......',
+    '.......wW.Ww......',   // tendrils
+    '........W.W.......',
+    '....W...w.w...W...',   // side wisps
+    '.....w.......w....',
+    '......W.....W.....',
+    '.......w...w......',
+    '........W.W.......',
+    '.........w........',
+  ];
+  return spr(rows, {
+    W:'#b0ccff', w:'#7099ee', R:'#ff3333',
+  });
+}
+
+// ── PHANTOM (16 wide × 22 tall) ──────────────────────────────────────────────
+function phantomSVG() {
+  const rows = [
+    '.......WW.......',   // crown
+    '......WWWW......',
+    '.....WWWWWWW....',
+    '....WWWWWWWWWW..',
+    '....WwEwWWwEwW..',   // white eyes
+    '....WWWWWWWWWW..',
+    '...WWWWWWWWWWWW.',
+    '...WwWWwwwwWWwW.',
+    '...WWWWWWWWWWWW.',
+    '....WWWWWWWWWW..',
+    '....wWWwwwWWWw..',
+    '.....WWWWWWWW...',
+    '.....wWwwwWwW...',
+    '......WwwwWW....',
+    '......wW..Ww....',
+    '.......W..W.....',
+    '...W...w..w...W.',
+    '....w.........w.',
+    '.....W.......W..',
+    '......w.....w...',
+    '.......W...W....',
+    '........w.w.....',
+  ];
+  return spr(rows, {
+    W:'#ddb0ff', w:'#9966cc', E:'#ffffff',
+  });
+}
+
+// ── IMP (20 wide × 24 tall) ──────────────────────────────────────────────────
+function impSVG() {
+  const rows = [
+    '....rr......rr......',   // horn tips
+    '...rRRr....rRRr.....',   // horns
+    '....RRRRRRRRRR......',   // head top
+    '...RRRRRRRRRRRR.....',
+    '...RROoRRRRRoOR.....',   // orange eyes w/ pupils
+    '...RRRRRRRRRRRRd....',
+    '...RRRkRRRRkRRRd....',   // nostrils
+    '..RRRRRRRRRRRRRRd...',
+    'WW.RRRkkkkkkkRR.WW..',   // jagged mouth + wings
+    'WW.RRRRRRRRRRRd.wW..',
+    'Ww.RRRRRRRRRRRR.ww..',
+    '...RRRRRRRRRRRR.....',   // body
+    '...RRRRRRRRRRRR.....',
+    '...rRRRRRRRRRRrr....',
+    '....rRRRRRRRRr......',
+    '....RRRR..RRRR......',   // legs
+    '....RRRR..RRRR...rr.',   // tail starts
+    '....rrrr..rrrr..rr..',
+    '.....rr....rr..rr...',
+    '...........r..rr....',
+    '..............rRr...',   // tail tip
+    '.............rRRr...',
+  ];
+  return spr(rows, {
+    R:'#cc2200', r:'#881100', d:'#550800',
+    O:'#ff6600', o:'#ffcc00', k:'#1a0000',
+    W:'#770000', w:'#550000',
+  });
+}
+
+// ── TROLL BOSS (26 wide × 28 tall, scale 5 = 130×140px) ─────────────────────
+function trollSVG() {
+  const rows = [
+    '.........GGGGGGGG.........',   // top of huge head
+    '.......GGGGGGGGGGGGg......',
+    '......GGGGGeGGGGeGGGGg....',   // red eyes
+    '......GGGGGGssGGGGGGGg....',   // snout highlight
+    '.....GGGGGGGGGGGGGGGGGg...',
+    '.....GGGwGGGGGGGGGwGGGGg..',   // tusks w=ivory
+    '.....GGGGGGGGGGGGGGGGGGg..',
+    '.....gGGkGkGkGkGkGGGGGgg..',   // teeth row
+    '.....GGGGGGGGGGGGGGGGGgg..',
+    '.....dDDDDDDDDDDDDDDDDd...',   // body top
+    '....dDDDDDDDDDDDDDDDDDdd...',
+    '..BbdDDDDDDDDDDDDDDDDDdBb.',   // arms + club
+    '..BbdDDDDDDDDDDDDDDDDDdBb.',
+    '.BBbdDDDDDDDDDDDDDDDDDdbBB',
+    '.BBbdDDDDDDDDDDDDDDDDDdbBB',
+    'BBBbdDDDDDDDDDDDDDDDDDdbbB',
+    'BBBbbDDDDDDDDDDDDDDDDDdbBB',
+    'BBBbdDDDDDDDDDDDDDDDDDdbbB',
+    '.BBbbDDDDDDDDDDDDDDDDDdbBB',
+    '..BbdDDDDD..DDDDDDDdBb.',    // legs gap
+    '....dDDDDD..DDDDDDDd....',
+    '....DDDDDDD..DDDDDDD....',
+    '....DDDDDDD..DDDDDDD....',
+    '....DDDDDDD..DDDDDDD....',
+    '....ggggggg..ggggggg....',   // big feet
+    '...gggggggg..gggggggg...',
+    '..ggggggggg..ggggggggg..',
+    '.gggggggggg..gggggggggg.',
+  ];
+  return spr(rows, {
+    G:'#6a8a6a', g:'#4a6a4a', d:'#2a4a2a', D:'#3a5a3a',
+    e:'#ff2200', s:'#8aaa7a', w:'#ffffcc',
+    k:'#1a0808', B:'#5a3a1a', b:'#3a2008',
+  }, 5);
 }
 
 function enemySVG(type) {
@@ -282,104 +517,6 @@ function enemySVG(type) {
     case 'troll':   return trollSVG();
     default:        return goblinSVG();
   }
-}
-
-function goblinSVG() {
-  const g='#2d8a2d',t='#1a6a1a',e='#ff3333',s='#ffd700',w='#ffffaa';
-  const px = [
-    [3,3,g],[12,3,g], // ears
-    [4,2,g],[5,2,g],[6,2,g],[7,2,g],[8,2,g],[9,2,g],[10,2,g],[11,2,g],
-    [4,3,g],[5,3,g],[6,3,e],[7,3,e],[8,3,e],[9,3,e],[10,3,g],[11,3,g],
-    [4,4,g],[5,4,g],[6,4,g],[7,4,s],[8,4,s],[9,4,g],[10,4,g],[11,4,g],
-    [4,5,g],[5,5,g],[6,5,w],[7,5,g],[8,5,g],[9,5,w],[10,5,g],[11,5,g],
-    [4,6,g],[5,6,g],[6,6,g],[7,6,g],[8,6,g],[9,6,g],[10,6,g],[11,6,g],
-    [5,7,t],[6,7,t],[7,7,t],[8,7,t],[9,7,t],[10,7,t],
-    [4,8,t],[5,8,t],[6,8,t],[7,8,t],[8,8,t],[9,8,t],[10,8,t],[11,8,t],
-    [4,9,t],[5,9,t],[6,9,t],[7,9,t],[8,9,t],[9,9,t],[10,9,t],[11,9,t],
-    [2,8,g],[3,8,g],[2,9,g],[3,9,g],[2,10,g],[3,10,g],
-    [12,8,g],[13,8,g],[12,9,g],[13,9,g],[12,10,g],[13,10,g],
-    [5,10,t],[6,10,t],[9,10,t],[10,10,t],
-    [5,11,'#8B6914'],[6,11,'#8B6914'],[9,11,'#8B6914'],[10,11,'#8B6914'],
-    [5,12,'#8B6914'],[6,12,'#8B6914'],[9,12,'#8B6914'],[10,12,'#8B6914'],
-  ];
-  return buildSVG(px, 16, 14);
-}
-
-function specterSVG() {
-  const w='#aaccff',d='#7799dd',e='#ff4444',k='#ffaaaa';
-  const px = [
-    [7,0,w],[8,0,w],
-    [6,1,w],[7,1,w],[8,1,w],[9,1,w],
-    [5,2,d],[6,2,d],[7,2,d],[8,2,d],[9,2,d],[10,2,d],
-    [4,3,w],[5,3,w],[6,3,e],[7,3,w],[8,3,w],[9,3,e],[10,3,w],[11,3,w],
-    [4,4,d],[5,4,d],[6,4,d],[7,4,d],[8,4,d],[9,4,d],[10,4,d],[11,4,d],
-    [4,5,w],[5,5,w],[6,5,w],[7,5,w],[8,5,w],[9,5,w],[10,5,w],[11,5,w],
-    [4,6,d],[5,6,d],[6,6,d],[7,6,d],[8,6,d],[9,6,d],[10,6,d],[11,6,d],
-    [5,7,w],[6,7,w],[7,7,w],[8,7,w],[9,7,w],[10,7,w],
-    [5,8,d],[7,8,d],[9,8,d],
-    [6,9,w],[8,9,w],[10,9,w],
-    [5,10,d],[9,10,d],
-  ];
-  return buildSVG(px, 16, 12);
-}
-
-function phantomSVG() {
-  const w='#ccaaff',d='#9977cc',e='#ffffff';
-  const px = [
-    [7,0,w],[8,0,w],
-    [6,1,w],[7,1,w],[8,1,w],[9,1,w],
-    [5,2,d],[6,2,d],[7,2,d],[8,2,d],[9,2,d],[10,2,d],
-    [4,3,d],[5,3,d],[6,3,e],[7,3,d],[8,3,d],[9,3,e],[10,3,d],[11,3,d],
-    [4,4,w],[5,4,w],[6,4,w],[7,4,w],[8,4,w],[9,4,w],[10,4,w],[11,4,w],
-    [4,5,d],[5,5,d],[6,5,d],[7,5,d],[8,5,d],[9,5,d],[10,5,d],[11,5,d],
-    [5,6,w],[6,6,w],[7,6,w],[8,6,w],[9,6,w],[10,6,w],
-    [5,7,d],[7,7,d],[9,7,d],
-    [6,8,w],[10,8,w],
-    [5,9,d],[9,9,d],
-  ];
-  return buildSVG(px, 16, 11);
-}
-
-function impSVG() {
-  const r='#cc2200',d='#aa1100',h='#ff4422',e='#ffff00';
-  const px = [
-    [5,0,r],[10,0,r],[6,1,r],[9,1,r], // horns
-    [5,2,r],[6,2,r],[7,2,r],[8,2,r],[9,2,r],[10,2,r],
-    [4,3,r],[5,3,r],[6,3,h],[7,3,r],[8,3,r],[9,3,h],[10,3,r],[11,3,r],
-    [4,4,r],[5,4,r],[6,4,r],[7,4,r],[8,4,r],[9,4,r],[10,4,r],[11,4,r],
-    [5,5,r],[6,5,'#111'],[7,5,r],[8,5,r],[9,5,'#111'],[10,5,r],
-    [1,3,d],[2,3,d],[2,4,d],[1,4,d],[1,5,d], // left wing
-    [13,3,d],[14,3,d],[13,4,d],[14,4,d],[14,5,d], // right wing
-    [5,6,d],[6,6,d],[7,6,d],[8,6,d],[9,6,d],[10,6,d],
-    [5,7,r],[6,7,r],[7,7,r],[8,7,r],[9,7,r],[10,7,r],
-    [6,8,r],[7,8,r],[8,8,r],[9,8,r],
-    [6,9,d],[7,9,d],[8,9,d],[9,9,d],
-    [11,7,d],[12,7,d],[13,8,d],[13,9,d],[12,10,d],[11,10,d], // tail
-    [5,10,d],[6,10,d],[8,10,d],[9,10,d],
-  ];
-  return buildSVG(px, 16, 12);
-}
-
-function trollSVG() {
-  const g='#5a7a5a',d='#3a5a3a',s='#8aaa7a',e='#ff2200',w='#ffffcc';
-  const px = [
-    [4,0,g],[5,0,g],[6,0,g],[7,0,g],[8,0,g],[9,0,g],[10,0,g],[11,0,g],
-    [3,1,g],[4,1,g],[5,1,g],[6,1,g],[7,1,g],[8,1,g],[9,1,g],[10,1,g],[11,1,g],[12,1,g],
-    [3,2,g],[4,2,g],[5,2,e],[6,2,e],[7,2,g],[8,2,s],[9,2,s],[10,2,e],[11,2,e],[12,2,g],
-    [3,3,g],[4,3,g],[5,3,g],[6,3,g],[7,3,g],[8,3,g],[9,3,g],[10,3,g],[11,3,g],[12,3,g],
-    [5,4,g],[6,4,w],[7,4,g],[8,4,g],[9,4,w],[10,4,g],
-    [6,5,w],[9,5,w], // tusks
-    [3,5,d],[4,5,d],[5,5,d],[6,5,d],[7,5,d],[8,5,d],[9,5,d],[10,5,d],[11,5,d],[12,5,d],
-    [2,6,g],[3,6,g],[4,6,g],[5,6,g],[6,6,g],[7,6,g],[8,6,g],[9,6,g],[10,6,g],[11,6,g],[12,6,g],[13,6,g],
-    [2,7,d],[3,7,d],[4,7,d],[5,7,d],[6,7,d],[7,7,d],[8,7,d],[9,7,d],[10,7,d],[11,7,d],[12,7,d],[13,7,d],
-    [2,8,g],[3,8,g],[4,8,g],[5,8,g],[6,8,g],[7,8,g],[8,8,g],[9,8,g],[10,8,g],[11,8,g],[12,8,g],[13,8,g],
-    [0,6,g],[1,6,g],[0,7,g],[1,7,g],[0,8,g],[1,8,g],[0,5,d],[1,5,d],[0,4,d], // left arm+club
-    [14,6,g],[15,6,g],[14,7,g],[15,7,g],[14,8,g],[15,8,g], // right arm
-    [4,9,d],[5,9,d],[6,9,d],[7,9,d],[8,9,d],[9,9,d],[10,9,d],[11,9,d],
-    [4,10,g],[5,10,g],[6,10,g],[7,10,g],[8,10,g],[9,10,g],[10,10,g],[11,10,g],
-    [3,11,g],[4,11,g],[5,11,g],[6,11,g],[9,11,g],[10,11,g],[11,11,g],[12,11,g],
-  ];
-  return buildSVG(px, 16, 13, 5); // bigger scale for the boss
 }
 
 // ── COMBAT ────────────────────────────────────────────────────────────────────
@@ -524,6 +661,12 @@ function renderHeader() {
   document.getElementById('xp-val').textContent        = state.xp;
   document.getElementById('paid-val').textContent      = state.totalPaid.toFixed(2);
   document.getElementById('remaining-val').textContent = totalRemaining().toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  // Total progress bar
+  const total = state.debts.reduce((s, d) => s + d.amount, 0);
+  const pct   = total > 0 ? Math.min(100, (state.totalPaid / total) * 100) : 0;
+  const bar   = document.getElementById('total-progress-bar');
+  if (bar) bar.style.width = pct + '%';
 }
 
 function renderHero() {
