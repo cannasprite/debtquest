@@ -4,10 +4,16 @@
   --card:     #1a1a2e;
   --gold:     #ffd700;
   --gold-dim: #8b6914;
+  --red:      #e74c3c;
+  --red-dim:  #7b2d2d;
+  --green:    #27ae60;
   --purple:   #8e44ad;
   --text:     #e8dcc8;
   --dim:      #6a5a48;
   --border:   #2a2a4a;
+  --hp-hi:    #27ae60;
+  --hp-mid:   #e67e22;
+  --hp-lo:    #e74c3c;
   --font:     'Press Start 2P', monospace;
 }
 
@@ -22,13 +28,26 @@ body {
   min-height: 100vh;
 }
 
+/* CRT scanline overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 3px,
+    rgba(0,0,0,0.05) 3px, rgba(0,0,0,0.05) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
 #app {
-  max-width: 800px;
+  max-width: 860px;
   margin: 0 auto;
-  padding: 12px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 /* ── HEADER ── */
@@ -59,69 +78,109 @@ body {
 
 .stats-block {
   display: flex;
-  gap: 16px;
+  gap: 14px;
   font-size: 7px;
   color: var(--dim);
   flex-wrap: wrap;
 }
-
 .stats-block strong { color: var(--gold); }
 
-/* ── HERO SECTION ── */
-#hero-section {
+/* ── FLOOR NAV ── */
+#floor-nav {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.floor-btn {
+  flex: 1;
+  min-width: 100px;
+  padding: 7px 10px;
+  background: var(--card);
+  color: var(--dim);
+  border: 2px solid var(--border);
+  font-family: var(--font);
+  font-size: 7px;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+.floor-btn:hover          { color: var(--text); border-color: var(--dim); }
+.floor-btn.active         { color: var(--gold); border-color: var(--gold); }
+.floor-btn.cleared        { color: var(--green); border-color: var(--green); }
+
+/* ── BATTLE ARENA ── */
+#battle-arena {
   display: flex;
   align-items: center;
-  gap: 24px;
-  padding: 24px;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 16px;
   background: var(--panel);
   border: 2px solid var(--border);
+  min-height: 210px;
+  position: relative;
+  overflow: hidden;
 }
 
-#hero-sprite {
-  flex-shrink: 0;
-  image-rendering: pixelated;
+/* stone-tile grid illusion */
+#battle-arena::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(42,42,74,.12) 0 1px, transparent 1px 48px),
+    repeating-linear-gradient(0deg,  rgba(42,42,74,.12) 0 1px, transparent 1px 48px);
+  pointer-events: none;
 }
 
-#hero-sprite svg {
-  display: block;
-  width: 80px;
-  height: 80px;
-  image-rendering: pixelated;
-}
-
-#hero-info {
+#hero-panel, #enemy-panel {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  align-items: center;
+  gap: 7px;
+  z-index: 1;
+  flex: 1;
 }
 
+#vs-col {
+  z-index: 1;
+  flex-shrink: 0;
+}
+
+#vs-text {
+  font-size: 12px;
+  color: var(--gold);
+  letter-spacing: 2px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* Hero */
+#hero-sprite { image-rendering: pixelated; }
+#hero-sprite svg { display: block; image-rendering: pixelated; }
+
 #hero-name {
-  font-size: 10px;
+  font-size: 8px;
   color: var(--gold);
   letter-spacing: 1px;
 }
 
-#hero-gear-label {
+#hero-gear {
   font-size: 6px;
   color: var(--dim);
-  letter-spacing: 1px;
-}
-
-#hero-gear {
-  font-size: 8px;
-  color: var(--text);
+  text-align: center;
 }
 
 #xp-bar-wrap {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 4px;
+  gap: 8px;
 }
 
 #xp-bar-track {
-  width: 160px;
-  height: 10px;
+  width: 120px;
+  height: 8px;
   background: var(--card);
   border: 1px solid var(--border);
   overflow: hidden;
@@ -135,7 +194,101 @@ body {
 }
 
 #xp-bar-label {
-  font-size: 6px;
+  font-size: 5px;
   color: var(--dim);
   white-space: nowrap;
 }
+
+/* Enemy */
+#enemy-sprite { image-rendering: pixelated; min-height: 64px; }
+#enemy-sprite svg { display: block; image-rendering: pixelated; }
+
+#enemy-name {
+  font-size: 8px;
+  color: var(--red);
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+#enemy-hp-wrap { text-align: center; }
+
+#enemy-hp-track {
+  width: 180px;
+  height: 16px;
+  background: #1a0808;
+  border: 2px solid #3a1818;
+  overflow: hidden;
+  position: relative;
+}
+
+#enemy-hp-track::before {
+  content: 'HP';
+  position: absolute;
+  left: 5px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 6px;
+  color: rgba(255,255,255,.35);
+  z-index: 1;
+  pointer-events: none;
+}
+
+#enemy-hp-bar {
+  height: 100%;
+  width: 100%;
+  background: var(--hp-hi);
+  transition: width 0.5s ease, background 0.5s ease;
+  position: relative;
+}
+
+#enemy-hp-bar::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 5px;
+  background: rgba(255,255,255,.2);
+}
+
+#enemy-hp-text {
+  font-size: 6px;
+  color: var(--dim);
+  margin-top: 4px;
+}
+
+.taunt-box {
+  font-size: 7px;
+  color: #c0392b;
+  text-align: center;
+  max-width: 190px;
+  padding: 6px 8px;
+  border: 1px solid rgba(192,57,43,.3);
+  background: rgba(192,57,43,.06);
+  font-style: italic;
+  line-height: 1.7;
+}
+
+/* ── ENEMY ROSTER ── */
+#enemy-roster {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.enemy-card {
+  flex: 1;
+  min-width: 120px;
+  background: var(--card);
+  border: 2px solid var(--border);
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: border-color 0.1s;
+}
+.enemy-card:hover:not(.defeated) { border-color: var(--gold-dim); }
+.enemy-card.active   { border-color: var(--red); }
+.enemy-card.defeated { opacity: .4; border-color: var(--green); cursor: default; }
+
+.card-name   { font-size: 6px; color: var(--text); margin-bottom: 4px; }
+.card-amount { font-size: 9px; color: var(--gold); margin-bottom: 5px; }
+.card-status { font-size: 6px; color: var(--dim); }
+
+.card-hp-mini { height: 5px; background: #111; border: 1px solid #222; overflow: hidden; margin-top: 5px; }
+.card-hp-fill { height: 100%; transition: width 0.3s; }
