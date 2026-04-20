@@ -141,5 +141,7 @@ function render() {
 }
 
 // ── INIT ─────────────────────────────────────────────────────────────────────
-load();
-render();
+document.addEventListener('DOMContentLoaded', () => {
+  load();
+  render();
+});
