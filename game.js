@@ -60,6 +60,30 @@ const INITIAL_DEBTS = [
   },
 ];
 
+// ── RANDOM EVENTS ────────────────────────────────────────────────────────────
+const EVENTS = [
+  { name: '⚡ LUCKY MONTH!',    desc: 'Tax refund energy! Double damage!',       mult: 2.0,  prob: 0.07 },
+  { name: '🌟 CRITICAL HIT!',   desc: 'Caught them off guard! 1.5× damage!',     mult: 1.5,  prob: 0.12 },
+  { name: '💪 DETERMINED!',     desc: 'Pure willpower! +20% bonus damage!',      mult: 1.2,  prob: 0.15 },
+  { name: '💀 CURSED MONTH',    desc: 'Unexpected expense. Only 80% applies.',   mult: 0.8,  prob: 0.10 },
+  { name: null,                                                                   mult: 1.0,  prob: 0.56 },
+];
+
+function rollEvent() {
+  let r = Math.random(), sum = 0;
+  for (const e of EVENTS) { sum += e.prob; if (r < sum) return e; }
+  return EVENTS[EVENTS.length - 1];
+}
+
+// ── LOOT DROPS ────────────────────────────────────────────────────────────────
+const LOOT = {
+  goblin:  ["Tattered Coin Pouch", "Goblin's Ear (+5 luck)", "Rusted Copper Ring"],
+  specter: ["Spectral Essence", "Ghost Coin", "Ledger Page Fragment"],
+  phantom: ["Phantom Dust", "Whisper Token", "Silver Sliver"],
+  imp:     ["Imp's Tail (APR immunity)", "Mischief Potion", "Cursed Credit Scroll"],
+  troll:   ["Troll Bridge Key 🗝️", "Boss Ruby (+100 XP)", "Freedom Stone 💎"],
+};
+
 // ── TITLES ───────────────────────────────────────────────────────────────────
 const TITLES = [
   { id: 'squire',   name: 'Squire of Debt',   minXP: 0,    gear: 'Cloth Armor | Wooden Sword',      tier: 0 },
@@ -77,6 +101,9 @@ const state = {
   totalPaid:     0,
   currentFloor:  1,
   activeEnemyId: 'student',
+  loot:          [],
+  log:           [],
+  lastPayment:   0,
 };
 
 // ── PERSISTENCE ───────────────────────────────────────────────────────────────
@@ -89,6 +116,9 @@ function save() {
     totalPaid:     state.totalPaid,
     currentFloor:  state.currentFloor,
     activeEnemyId: state.activeEnemyId,
+    loot:          state.loot,
+    log:           state.log.slice(0, 30),
+    lastPayment:   state.lastPayment,
   }));
 }
 
@@ -281,6 +311,96 @@ function trollSVG() {
   return buildSVG(px, 16, 13, 5); // bigger scale for the boss
 }
 
+// ── COMBAT ────────────────────────────────────────────────────────────────────
+function addLog(msg, type = 'system') {
+  state.log.unshift({ msg, type });
+  if (state.log.length > 50) state.log.pop();
+  renderLog();
+}
+
+function attack() {
+  const input  = document.getElementById('payment-input');
+  const amount = parseFloat(input.value);
+
+  if (!amount || amount <= 0) {
+    addLog('>> Enter a payment amount to attack!', 'system');
+    return;
+  }
+
+  const enemy = state.debts.find(d => d.id === state.activeEnemyId);
+  if (!enemy)          { addLog('>> Select an enemy first!', 'system'); return; }
+  if (enemy.defeated)  { addLog('>> That enemy is already defeated!', 'system'); return; }
+
+  const event      = rollEvent();
+  const effective  = +(amount * event.mult).toFixed(2);
+
+  // Apply damage
+  state.lastPayment  = amount;
+  state.totalPaid   += amount;
+  enemy.paid         = Math.min(enemy.amount, enemy.paid + effective);
+
+  // XP: 1 per dollar + event bonus
+  const xpGained = Math.round(amount + (event.mult > 1 ? amount * 0.3 : 0));
+  state.xp += xpGained;
+
+  // Log it
+  addLog(`⚔ ATTACK! ${fmt(amount)} damage dealt!`, 'damage');
+  if (event.name) {
+    addLog(`${event.name} — ${event.desc}`, 'event');
+    if (effective !== amount) addLog(`Effective hit: ${fmt(effective)}`, 'event');
+  }
+  addLog(`+${xpGained} XP`, 'system');
+
+  // Animate
+  floatDamage(fmt(amount));
+  document.getElementById('enemy-panel').classList.add('shake');
+  setTimeout(() => document.getElementById('enemy-panel').classList.remove('shake'), 380);
+
+  // Defeat?
+  let defeated = null;
+  if (enemy.paid >= enemy.amount) {
+    enemy.defeated = true;
+    defeated = enemy;
+    const drops = LOOT[enemy.type] || ['Mystery Item'];
+    const drop  = drops[Math.floor(Math.random() * drops.length)];
+    state.loot.push({ item: drop, from: enemy.name });
+    addLog(`💀 ${enemy.name} DEFEATED! Loot: ${drop}`, 'defeat');
+    // Bonus XP for kill
+    state.xp += 50;
+    addLog(`+50 KILL BONUS XP`, 'loot');
+  }
+
+  input.value = '';
+  save();
+  render();
+
+  if (defeated) {
+    setTimeout(() => showModal(defeated), 500);
+  }
+}
+
+function floatDamage(text) {
+  const panel = document.getElementById('enemy-panel');
+  const el    = document.createElement('div');
+  el.className   = 'dmg-float';
+  el.textContent = `-${text}`;
+  panel.style.position = 'relative';
+  panel.appendChild(el);
+  setTimeout(() => el.remove(), 950);
+}
+
+function showModal(defeated) {
+  document.getElementById('modal-icon').textContent  = '💀';
+  document.getElementById('modal-title').textContent = 'ENEMY DEFEATED!';
+  const loot = state.loot.find(l => l.from === defeated.name);
+  document.getElementById('modal-body').innerHTML = `
+    <p>${defeated.name} has been slain!</p>
+    ${loot ? `<p style="color:var(--purple);margin-top:8px">🎁 LOOT: ${loot.item}</p>` : ''}
+    <p style="color:var(--gold);margin-top:8px">+50 Kill Bonus XP</p>
+  `;
+  document.getElementById('modal-overlay').classList.remove('hidden');
+}
+
 // ── RENDER ────────────────────────────────────────────────────────────────────
 function render() {
   renderHeader();
@@ -288,6 +408,15 @@ function render() {
   renderFloorNav();
   renderEnemy();
   renderRoster();
+  renderLog();
+}
+
+function renderLog() {
+  const el = document.getElementById('combat-log');
+  if (!el) return;
+  el.innerHTML = state.log.map(e =>
+    `<div class="log-entry log-${e.type}">${e.msg}</div>`
+  ).join('');
 }
 
 function renderHeader() {
@@ -395,6 +524,22 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.floor-btn').forEach(btn => {
     btn.addEventListener('click', () => switchFloor(parseInt(btn.dataset.floor)));
   });
+
+  document.getElementById('attack-btn').addEventListener('click', attack);
+  document.getElementById('payment-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') attack();
+  });
+
+  document.getElementById('modal-close').addEventListener('click', () => {
+    document.getElementById('modal-overlay').classList.add('hidden');
+  });
+
+  // Welcome message on first load
+  if (state.log.length === 0) {
+    addLog('⚔ Welcome to DEBT QUEST!', 'event');
+    addLog('Enter a payment amount and hit ATTACK to deal damage.', 'system');
+    addLog(`Total debt: ${fmt(state.debts.reduce((s,d)=>s+d.amount,0))} across ${state.debts.length} enemies.`, 'system');
+  }
 
   // Rotate taunts every 5 seconds
   setInterval(() => {
