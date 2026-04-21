@@ -243,20 +243,48 @@
 
   </div><!-- /#app -->
 
-  <!-- ONBOARDING OVERLAY -->
+  <!-- ONBOARDING OVERLAY (5-screen RPG flow) -->
   <div id="onboarding-overlay" class="hidden">
-    <div id="onboarding-box">
-      <div id="ob-logo">⚔ DEBT QUEST ⚔</div>
-      <div id="ob-tagline">A TALE OF MONSTERS AND MONEY</div>
-      <div id="ob-scroll">
-        <p>In a realm where debt takes monstrous form, the creatures grow stronger with every passing day...</p>
-        <p>But you — a hero of discipline and budget — shall slay the beasts that haunt your ledger.</p>
-        <p>Name your hero. Choose your class. Begin your quest.</p>
+
+    <!-- Progress indicator -->
+    <div id="ob-progress">
+      <span class="ob-dot" data-step="1"></span>
+      <span class="ob-dot-bar"></span>
+      <span class="ob-dot" data-step="2"></span>
+      <span class="ob-dot-bar"></span>
+      <span class="ob-dot" data-step="3"></span>
+      <span class="ob-dot-bar"></span>
+      <span class="ob-dot" data-step="4"></span>
+      <span class="ob-dot-bar"></span>
+      <span class="ob-dot" data-step="5"></span>
+    </div>
+
+    <!-- ═══ SCREEN 1: TITLE ═══ -->
+    <div class="ob-screen" id="ob-screen-1">
+      <div id="ob1-stars"></div>
+      <div id="ob1-torch-l"></div>
+      <div id="ob1-torch-r"></div>
+      <div id="ob1-center">
+        <div id="ob1-emblem">⚔</div>
+        <h1 id="ob1-title">DEBT<br>QUEST</h1>
+        <div id="ob1-rule"></div>
+        <p id="ob1-tagline">Your debt is the dungeon.<br>Your payments are the sword.<br>Begin your quest.</p>
+        <button class="ob-cta" id="ob1-begin">⚔ BEGIN YOUR QUEST</button>
       </div>
-      <form id="onboarding-form">
+      <div id="ob1-ground"></div>
+    </div>
+
+    <!-- ═══ SCREEN 2: CREATE YOUR LEGEND ═══ -->
+    <div class="ob-screen" id="ob-screen-2">
+      <div class="ob-panel">
+        <div class="ob-screen-heading">CREATE YOUR LEGEND</div>
         <div class="ob-field">
           <label for="ob-name">HERO NAME</label>
-          <input id="ob-name" type="text" placeholder="Enter your name..." maxlength="20" required autocomplete="off">
+          <input id="ob-name" type="text" placeholder="Your name..." maxlength="20" autocomplete="off">
+        </div>
+        <div class="ob-field">
+          <label for="ob-email">EMAIL <span class="ob-optional">(optional)</span></label>
+          <input id="ob-email" type="email" placeholder="you@example.com" autocomplete="off">
         </div>
         <div class="ob-class-label">CHOOSE YOUR CLASS</div>
         <div class="ob-class-grid">
@@ -279,9 +307,53 @@
             <div class="ob-class-desc">Critical Hits 2× more often</div>
           </label>
         </div>
-        <button type="submit" id="ob-begin-btn">⚔ BEGIN YOUR QUEST</button>
-      </form>
+        <div class="ob-nav-row">
+          <button class="ob-back-btn" id="ob2-back">← BACK</button>
+          <button class="ob-cta ob-cta-sm" id="ob2-next">CONTINUE →</button>
+        </div>
+      </div>
     </div>
+
+    <!-- ═══ SCREEN 3: MONSTERS (stub — built next) ═══ -->
+    <div class="ob-screen" id="ob-screen-3">
+      <div class="ob-panel">
+        <div class="ob-screen-heading">ENTER YOUR MONSTERS</div>
+        <p class="ob-stub-note">Name your debts. Each one becomes a monster in the dungeon.</p>
+        <p class="ob-stub-note ob-stub-dim">Full monster-entry screen coming soon — your debts are already loaded.</p>
+        <div class="ob-nav-row">
+          <button class="ob-back-btn" id="ob3-back">← BACK</button>
+          <button class="ob-cta ob-cta-sm" id="ob3-next">CONTINUE →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SCREEN 4: SPRITE BUILDER (stub — built next) ═══ -->
+    <div class="ob-screen" id="ob-screen-4">
+      <div class="ob-panel">
+        <div class="ob-screen-heading">BUILD YOUR SPRITE</div>
+        <p class="ob-stub-note">Customize your hero: skin, hair, armor, weapon.</p>
+        <p class="ob-stub-note ob-stub-dim">Full sprite builder coming soon — use the HERO tab after launch.</p>
+        <div class="ob-nav-row">
+          <button class="ob-back-btn" id="ob4-back">← BACK</button>
+          <button class="ob-cta ob-cta-sm" id="ob4-next">CONTINUE →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SCREEN 5: ENTER THE DUNGEON ═══ -->
+    <div class="ob-screen" id="ob-screen-5">
+      <div class="ob-panel ob-panel-final">
+        <div class="ob-screen-heading">ENTER THE DUNGEON</div>
+        <div id="ob5-preview"></div>
+        <div id="ob5-hero-name"></div>
+        <div id="ob5-stats"></div>
+        <div class="ob-nav-row">
+          <button class="ob-back-btn" id="ob5-back">← BACK</button>
+          <button class="ob-cta" id="ob5-enter">⚔ ENTER THE DUNGEON</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- MODAL -->

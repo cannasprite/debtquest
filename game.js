@@ -1541,23 +1541,68 @@ function renderHeroEditor() {
   buildSwatches('he-armor', ARMOR_COLORS, 'armor');
 }
 
-// ── ONBOARDING ────────────────────────────────────────────────────────────────
-function showOnboarding() {
-  document.getElementById('onboarding-overlay').classList.remove('hidden');
-  setTimeout(() => document.getElementById('ob-name').focus(), 100);
+// ── ONBOARDING STATE MACHINE ──────────────────────────────────────────────────
+const OB = { step: 1 };
+
+function torchSVG() {
+  return spr([
+    '..f..',
+    '.fff.',
+    '.FFF.',
+    '.fff.',
+    '..f..',
+    '..s..',
+    '..s..',
+    '.sss.',
+  ], { f: '#ff6010', F: '#ffe060', s: '#7a4810' }, 6);
 }
 
-function handleOnboarding(e) {
-  e.preventDefault();
-  const name  = document.getElementById('ob-name').value.trim();
-  const cls   = document.querySelector('input[name="ob-class"]:checked')?.value || 'slayer';
-  if (!name) return;
+function obInitScreen1() {
+  const sc = document.getElementById('ob1-stars');
+  if (sc && !sc.hasChildNodes()) {
+    let h = '';
+    for (let i = 0; i < 80; i++) {
+      const x  = (Math.random() * 100).toFixed(1);
+      const y  = (Math.random() * 72).toFixed(1);
+      const sz = Math.random() > 0.85 ? '3px' : Math.random() > 0.5 ? '2px' : '1px';
+      const op = (0.25 + Math.random() * 0.75).toFixed(2);
+      h += `<div class="ob1-star" style="left:${x}%;top:${y}%;width:${sz};height:${sz};opacity:${op}"></div>`;
+    }
+    sc.innerHTML = h;
+  }
+  const tl = document.getElementById('ob1-torch-l');
+  const tr = document.getElementById('ob1-torch-r');
+  if (tl && !tl.hasChildNodes()) tl.innerHTML = torchSVG();
+  if (tr && !tr.hasChildNodes()) tr.innerHTML = torchSVG();
+}
+
+function obGoTo(n) {
+  document.querySelectorAll('.ob-screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(`ob-screen-${n}`).classList.add('active');
+  document.querySelectorAll('.ob-dot').forEach(d => {
+    const s = parseInt(d.dataset.step);
+    d.classList.toggle('active', s === n);
+    d.classList.toggle('done',   s < n);
+  });
+  OB.step = n;
+  if (n === 1) obInitScreen1();
+  if (n === 2) setTimeout(() => document.getElementById('ob-name')?.focus(), 120);
+  if (n === 5) obRenderScreen5();
+}
+
+function showOnboarding() {
+  document.getElementById('onboarding-overlay').classList.remove('hidden');
+  obGoTo(1);
+}
+
+function obFinish() {
+  const name = document.getElementById('ob-name')?.value.trim() || 'SPRITE';
+  const cls  = document.querySelector('input[name="ob-class"]:checked')?.value || 'slayer';
 
   state.playerName  = name;
   state.playerClass = cls;
   document.getElementById('onboarding-overlay').classList.add('hidden');
-  save();
-  render();
+  save(); render();
 
   const classLabels = { slayer: 'Debt Slayer', mage: 'Budget Mage', rogue: 'Frugal Rogue' };
   const classDesc   = {
@@ -1571,6 +1616,20 @@ function handleOnboarding(e) {
     icon: '⚔', title: `WELCOME, ${name.toUpperCase()}!`,
     body: `You have chosen the path of the <strong>${classLabels[cls]}</strong>.<br><br>${classDesc[cls]}.<br><br>The dungeon awaits. Slay your debts!`,
   }), 200);
+}
+
+function obRenderScreen5() {
+  const name   = document.getElementById('ob-name')?.value.trim() || 'SPRITE';
+  const cls    = document.querySelector('input[name="ob-class"]:checked')?.value || 'slayer';
+  const total  = state.debts.reduce((s, d) => s + d.amount, 0);
+  const clsLbl = { slayer: 'Debt Slayer', mage: 'Budget Mage', rogue: 'Frugal Rogue' };
+
+  const prev = document.getElementById('ob5-preview');
+  const nm   = document.getElementById('ob5-hero-name');
+  const st   = document.getElementById('ob5-stats');
+  if (prev) prev.innerHTML = state.heroStyle === 'lady' ? heroFemSVG(0) : heroSVG(0);
+  if (nm)   nm.textContent  = name;
+  if (st)   st.innerHTML    = `${clsLbl[cls] || 'Hero'}<br>${state.debts.length} monsters await &nbsp;·&nbsp; ${fmt(total)} total debt`;
 }
 
 function switchTab(name) {
@@ -1624,7 +1683,22 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('summon-form').addEventListener('submit', handleSummon);
-  document.getElementById('onboarding-form').addEventListener('submit', handleOnboarding);
+
+  // Onboarding navigation
+  document.getElementById('ob1-begin').addEventListener('click', () => obGoTo(2));
+  document.getElementById('ob2-back').addEventListener('click',  () => obGoTo(1));
+  document.getElementById('ob2-next').addEventListener('click',  () => {
+    if (!document.getElementById('ob-name')?.value.trim()) {
+      document.getElementById('ob-name')?.focus(); return;
+    }
+    obGoTo(3);
+  });
+  document.getElementById('ob3-back').addEventListener('click',  () => obGoTo(2));
+  document.getElementById('ob3-next').addEventListener('click',  () => obGoTo(4));
+  document.getElementById('ob4-back').addEventListener('click',  () => obGoTo(3));
+  document.getElementById('ob4-next').addEventListener('click',  () => { obRenderScreen5(); obGoTo(5); });
+  document.getElementById('ob5-back').addEventListener('click',  () => obGoTo(4));
+  document.getElementById('ob5-enter').addEventListener('click', obFinish);
 
   document.getElementById('score-update-btn').addEventListener('click', () => {
     const val = parseInt(document.getElementById('score-input').value);
