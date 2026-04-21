@@ -1678,38 +1678,42 @@ function obInitScreen3() {
 }
 
 // ── SCREEN 4: SPRITE BUILDER ─────────────────────────────────────────────────
-function ob4BuildSwatches(containerId, palette, key) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-  container.innerHTML = '';
+function ob4SetStyle(style) {
+  state.heroStyle = style;
+  save(); ob4Refresh();
+}
 
-  const reset = document.createElement('div');
-  reset.className = 'ob4-swatch-reset' + (!state.heroCustom[key] ? ' selected' : '');
-  reset.title = 'Default';
-  reset.textContent = '↺';
-  reset.addEventListener('click', () => {
+function ob4SetColor(key, id) {
+  if (!state.heroCustom) state.heroCustom = { hair: null, skin: null, armor: null };
+  if (id === '__reset__') {
     state.heroCustom[key] = null;
-    save(); ob4Refresh();
-  });
-  container.appendChild(reset);
+  } else {
+    const palettes = { skin: SKIN_TONES, hair: HAIR_COLORS, armor: ARMOR_COLORS };
+    state.heroCustom[key] = palettes[key].find(c => c.id === id) || null;
+  }
+  save(); ob4Refresh();
+}
 
-  palette.forEach(color => {
-    const el = document.createElement('div');
-    el.className = 'ob4-swatch' + (state.heroCustom[key]?.id === color.id ? ' selected' : '');
-    el.style.background = color.val;
-    el.title = color.name;
-    el.addEventListener('click', () => {
-      state.heroCustom[key] = color;
-      save(); ob4Refresh();
-    });
-    container.appendChild(el);
-  });
+function ob4SwatchHTML(palette, key) {
+  if (!state.heroCustom) state.heroCustom = { hair: null, skin: null, armor: null };
+  const cur = state.heroCustom[key];
+  const reset = `<div class="ob4-swatch-reset${!cur ? ' selected' : ''}" onclick="ob4SetColor('${key}','__reset__')" title="Default">↺</div>`;
+  const swatches = palette.map(c =>
+    `<div class="ob4-swatch${cur?.id === c.id ? ' selected' : ''}" style="background:${c.val}" onclick="ob4SetColor('${key}','${c.id}')" title="${c.name}"></div>`
+  ).join('');
+  return reset + swatches;
 }
 
 function ob4Refresh() {
+  if (!state.heroCustom) state.heroCustom = { hair: null, skin: null, armor: null };
   const isLady = state.heroStyle === 'lady';
+
   const prev = document.getElementById('ob4-sprite-preview');
-  if (prev) prev.innerHTML = isLady ? heroFemSVG(0, 6) : heroSVG(0, 6);
+  if (prev) {
+    prev.innerHTML = isLady ? heroFemSVG(0, 6) : heroSVG(0, 6);
+    prev.classList.add('ob4-flash');
+    setTimeout(() => prev.classList.remove('ob4-flash'), 200);
+  }
 
   const dm = document.getElementById('ob4-mini-default');
   const lm = document.getElementById('ob4-mini-lady');
@@ -1717,12 +1721,15 @@ function ob4Refresh() {
   if (lm) lm.innerHTML = heroFemSVG(0, 2);
 
   document.querySelectorAll('.ob4-style-card').forEach(c => {
-    c.classList.toggle('selected', c.dataset.style === state.heroStyle);
+    c.classList.toggle('selected', c.dataset.style === (state.heroStyle || 'default'));
   });
 
-  ob4BuildSwatches('ob4-skin',   SKIN_TONES,   'skin');
-  ob4BuildSwatches('ob4-hair',   HAIR_COLORS,  'hair');
-  ob4BuildSwatches('ob4-armor',  ARMOR_COLORS, 'armor');
+  const skin  = document.getElementById('ob4-skin');
+  const hair  = document.getElementById('ob4-hair');
+  const armor = document.getElementById('ob4-armor');
+  if (skin)  skin.innerHTML  = ob4SwatchHTML(SKIN_TONES,   'skin');
+  if (hair)  hair.innerHTML  = ob4SwatchHTML(HAIR_COLORS,  'hair');
+  if (armor) armor.innerHTML = ob4SwatchHTML(ARMOR_COLORS, 'armor');
 }
 
 function obInitScreen4() {
@@ -1872,12 +1879,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('ob3-debt-amount').addEventListener('keydown', e => { if (e.key === 'Enter') obAddDebt(); });
   document.getElementById('ob4-back').addEventListener('click', () => obGoTo(3));
   document.getElementById('ob4-next').addEventListener('click', () => obGoTo(5));
-  document.querySelectorAll('.ob4-style-card').forEach(card => {
-    card.addEventListener('click', () => {
-      state.heroStyle = card.dataset.style;
-      save(); ob4Refresh();
-    });
-  });
   document.getElementById('ob5-back').addEventListener('click',  () => obGoTo(4));
   document.getElementById('ob5-enter').addEventListener('click', obFinish);
 
