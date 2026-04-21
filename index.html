@@ -179,6 +179,47 @@
 
   </div><!-- /#app -->
 
+  <!-- ONBOARDING OVERLAY -->
+  <div id="onboarding-overlay" class="hidden">
+    <div id="onboarding-box">
+      <div id="ob-logo">⚔ DEBT QUEST ⚔</div>
+      <div id="ob-tagline">A TALE OF MONSTERS AND MONEY</div>
+      <div id="ob-scroll">
+        <p>In a realm where debt takes monstrous form, the creatures grow stronger with every passing day...</p>
+        <p>But you — a hero of discipline and budget — shall slay the beasts that haunt your ledger.</p>
+        <p>Name your hero. Choose your class. Begin your quest.</p>
+      </div>
+      <form id="onboarding-form">
+        <div class="ob-field">
+          <label for="ob-name">HERO NAME</label>
+          <input id="ob-name" type="text" placeholder="Enter your name..." maxlength="20" required autocomplete="off">
+        </div>
+        <div class="ob-class-label">CHOOSE YOUR CLASS</div>
+        <div class="ob-class-grid">
+          <label class="ob-class-card">
+            <input type="radio" name="ob-class" value="slayer" checked>
+            <div class="ob-class-icon">⚔</div>
+            <div class="ob-class-name">DEBT SLAYER</div>
+            <div class="ob-class-desc">+10% bonus damage on every hit</div>
+          </label>
+          <label class="ob-class-card">
+            <input type="radio" name="ob-class" value="mage">
+            <div class="ob-class-icon">🔮</div>
+            <div class="ob-class-name">BUDGET MAGE</div>
+            <div class="ob-class-desc">Lucky Month events 2× more often</div>
+          </label>
+          <label class="ob-class-card">
+            <input type="radio" name="ob-class" value="rogue">
+            <div class="ob-class-icon">🗡</div>
+            <div class="ob-class-name">FRUGAL ROGUE</div>
+            <div class="ob-class-desc">Critical Hits 2× more often</div>
+          </label>
+        </div>
+        <button type="submit" id="ob-begin-btn">⚔ BEGIN YOUR QUEST</button>
+      </form>
+    </div>
+  </div>
+
   <!-- MODAL -->
   <div id="modal-overlay" class="hidden">
     <div id="modal-box">

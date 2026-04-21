@@ -70,9 +70,17 @@ const EVENTS = [
 ];
 
 function rollEvent() {
-  let r = Math.random(), sum = 0;
-  for (const e of EVENTS) { sum += e.prob; if (r < sum) return e; }
-  return EVENTS[EVENTS.length - 1];
+  const cls = state.playerClass;
+  const pool = EVENTS.map(e => {
+    let prob = e.prob;
+    if (cls === 'mage'  && e.name?.includes('LUCKY'))    prob = prob * 2;
+    if (cls === 'rogue' && e.name?.includes('CRITICAL')) prob = prob * 2;
+    return { ...e, prob };
+  });
+  const total = pool.reduce((s, e) => s + e.prob, 0);
+  let r = Math.random() * total, sum = 0;
+  for (const e of pool) { sum += e.prob; if (r < sum) return e; }
+  return pool[pool.length - 1];
 }
 
 // ── LOOT DROPS ────────────────────────────────────────────────────────────────
@@ -216,6 +224,8 @@ const state = {
   achievements:   [],
   earnedTitles:   ['squire'],
   equippedTitle:  'squire',
+  playerName:     '',
+  playerClass:    'slayer',
 };
 
 // ── PERSISTENCE ───────────────────────────────────────────────────────────────
@@ -235,6 +245,8 @@ function save() {
     achievements:  state.achievements,
     earnedTitles:  state.earnedTitles,
     equippedTitle: state.equippedTitle,
+    playerName:    state.playerName,
+    playerClass:   state.playerClass,
   }));
 }
 
@@ -781,7 +793,8 @@ function attack() {
   if (enemy.defeated)  { addLog('>> That enemy is already defeated!', 'system'); return; }
 
   const event      = rollEvent();
-  const effective  = +(amount * event.mult).toFixed(2);
+  const classMult  = state.playerClass === 'slayer' ? 1.1 : 1.0;
+  const effective  = +(amount * event.mult * classMult).toFixed(2);
 
   // Apply damage
   state.lastPayment  = amount;
@@ -842,7 +855,15 @@ function floatDamage(text) {
   setTimeout(() => el.remove(), 950);
 }
 
-function showModal(defeated, newAchs = [], newTitles = []) {
+function showModal(defeated, newAchs = [], newTitles = [], custom = null) {
+  if (custom) {
+    document.getElementById('modal-icon').textContent  = custom.icon;
+    document.getElementById('modal-title').textContent = custom.title;
+    document.getElementById('modal-body').innerHTML    = `<p>${custom.body}</p>`;
+    document.getElementById('modal-overlay').classList.remove('hidden');
+    return;
+  }
+
   const hasDefeat = !!defeated;
   const hasAchs   = newAchs.length > 0;
   const hasTitles = newTitles.length > 0;
@@ -915,6 +936,7 @@ function renderHero() {
   const next  = getNextTitle(state.xp);
 
   document.getElementById('hero-sprite').innerHTML = heroSVG(title.tier);
+  document.getElementById('hero-name').textContent = state.playerName || 'SPRITE';
   document.getElementById('hero-gear').textContent = title.gear;
 
   if (next) {
@@ -1279,6 +1301,38 @@ function handleSummon(e) {
   selectEnemy(newDebt.id);
 }
 
+// ── ONBOARDING ────────────────────────────────────────────────────────────────
+function showOnboarding() {
+  document.getElementById('onboarding-overlay').classList.remove('hidden');
+  setTimeout(() => document.getElementById('ob-name').focus(), 100);
+}
+
+function handleOnboarding(e) {
+  e.preventDefault();
+  const name  = document.getElementById('ob-name').value.trim();
+  const cls   = document.querySelector('input[name="ob-class"]:checked')?.value || 'slayer';
+  if (!name) return;
+
+  state.playerName  = name;
+  state.playerClass = cls;
+  document.getElementById('onboarding-overlay').classList.add('hidden');
+  save();
+  render();
+
+  const classLabels = { slayer: 'Debt Slayer', mage: 'Budget Mage', rogue: 'Frugal Rogue' };
+  const classDesc   = {
+    slayer: '+10% bonus damage on every attack',
+    mage:   'Lucky Month events strike twice as often',
+    rogue:  'Critical Hits land twice as often',
+  };
+  addLog(`⚔ ${name} the ${classLabels[cls]} enters the dungeon!`, 'event');
+  addLog(`Class bonus: ${classDesc[cls]}`, 'system');
+  setTimeout(() => showModal(null, [], [], {
+    icon: '⚔', title: `WELCOME, ${name.toUpperCase()}!`,
+    body: `You have chosen the path of the <strong>${classLabels[cls]}</strong>.<br><br>${classDesc[cls]}.<br><br>The dungeon awaits. Slay your debts!`,
+  }), 200);
+}
+
 function switchTab(name) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -1328,6 +1382,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('summon-form').addEventListener('submit', handleSummon);
+  document.getElementById('onboarding-form').addEventListener('submit', handleOnboarding);
 
   // Auto-suggest floor + type from amount
   document.getElementById('s-amount').addEventListener('input', e => {
@@ -1339,9 +1394,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Welcome message on first load
-  if (state.log.length === 0) {
-    addLog('⚔ Welcome to DEBT QUEST!', 'event');
+  // Show onboarding on first visit, else welcome back
+  if (!state.playerName) {
+    showOnboarding();
+  } else if (state.log.length === 0) {
+    addLog(`⚔ Welcome back, ${state.playerName}!`, 'event');
     addLog('Enter a payment amount and hit ATTACK to deal damage.', 'system');
     addLog(`Total debt: ${fmt(state.debts.reduce((s,d)=>s+d.amount,0))} across ${state.debts.length} enemies.`, 'system');
   }
