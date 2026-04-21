@@ -1639,13 +1639,21 @@ function obRenderDebtList() {
   });
 }
 
+function obShakeInput(el) {
+  if (!el) return;
+  el.classList.remove('ob-input-shake');
+  void el.offsetWidth;
+  el.classList.add('ob-input-shake');
+  el.focus();
+}
+
 function obAddDebt() {
   const nameEl   = document.getElementById('ob3-debt-name');
   const amountEl = document.getElementById('ob3-debt-amount');
   const name   = nameEl?.value.trim();
   const amount = parseFloat(amountEl?.value);
-  if (!name)           { nameEl?.focus();   return; }
-  if (!amount || amount <= 0) { amountEl?.focus(); return; }
+  if (!name)                  { obShakeInput(nameEl);   return; }
+  if (!amount || amount <= 0) { obShakeInput(amountEl); return; }
   const s = suggestMonster(amount);
   OB.debts.push({
     id:           `ob_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,

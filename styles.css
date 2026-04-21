@@ -958,6 +958,14 @@ body::before {
   width: 100%; transition: border-color .12s, box-shadow .12s;
 }
 .ob-field input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 10px var(--gold-glow); }
+.ob-input-shake { animation: ob-input-shake .35s ease !important; border-color: var(--red) !important; }
+@keyframes ob-input-shake {
+  0%,100% { transform: translateX(0); }
+  20%     { transform: translateX(-5px); }
+  40%     { transform: translateX(5px); }
+  60%     { transform: translateX(-3px); }
+  80%     { transform: translateX(3px); }
+}
 
 .ob-class-label { font-size: 7px; color: var(--dim); text-align: center; letter-spacing: 1px; }
 .ob-class-grid  { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
