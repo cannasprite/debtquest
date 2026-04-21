@@ -1677,6 +1677,58 @@ function obInitScreen3() {
   setTimeout(() => document.getElementById('ob3-debt-name')?.focus(), 180);
 }
 
+// ── SCREEN 4: SPRITE BUILDER ─────────────────────────────────────────────────
+function ob4BuildSwatches(containerId, palette, key) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '';
+
+  const reset = document.createElement('div');
+  reset.className = 'ob4-swatch-reset' + (!state.heroCustom[key] ? ' selected' : '');
+  reset.title = 'Default';
+  reset.textContent = '↺';
+  reset.addEventListener('click', () => {
+    state.heroCustom[key] = null;
+    save(); ob4Refresh();
+  });
+  container.appendChild(reset);
+
+  palette.forEach(color => {
+    const el = document.createElement('div');
+    el.className = 'ob4-swatch' + (state.heroCustom[key]?.id === color.id ? ' selected' : '');
+    el.style.background = color.val;
+    el.title = color.name;
+    el.addEventListener('click', () => {
+      state.heroCustom[key] = color;
+      save(); ob4Refresh();
+    });
+    container.appendChild(el);
+  });
+}
+
+function ob4Refresh() {
+  const isLady = state.heroStyle === 'lady';
+  const prev = document.getElementById('ob4-sprite-preview');
+  if (prev) prev.innerHTML = isLady ? heroFemSVG(0, 6) : heroSVG(0, 6);
+
+  const dm = document.getElementById('ob4-mini-default');
+  const lm = document.getElementById('ob4-mini-lady');
+  if (dm) dm.innerHTML = heroSVG(0, 2);
+  if (lm) lm.innerHTML = heroFemSVG(0, 2);
+
+  document.querySelectorAll('.ob4-style-card').forEach(c => {
+    c.classList.toggle('selected', c.dataset.style === state.heroStyle);
+  });
+
+  ob4BuildSwatches('ob4-skin',   SKIN_TONES,   'skin');
+  ob4BuildSwatches('ob4-hair',   HAIR_COLORS,  'hair');
+  ob4BuildSwatches('ob4-armor',  ARMOR_COLORS, 'armor');
+}
+
+function obInitScreen4() {
+  ob4Refresh();
+}
+
 function obGoTo(n) {
   document.querySelectorAll('.ob-screen').forEach(s => s.classList.remove('active'));
   document.getElementById(`ob-screen-${n}`).classList.add('active');
@@ -1689,6 +1741,7 @@ function obGoTo(n) {
   if (n === 1) obInitScreen1();
   if (n === 2) obInitScreen2();
   if (n === 3) obInitScreen3();
+  if (n === 4) obInitScreen4();
   if (n === 5) obRenderScreen5();
 }
 
@@ -1817,8 +1870,14 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('ob3-debt-amount').addEventListener('input', obUpdateMonsterPreview);
   document.getElementById('ob3-debt-name').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('ob3-debt-amount')?.focus(); });
   document.getElementById('ob3-debt-amount').addEventListener('keydown', e => { if (e.key === 'Enter') obAddDebt(); });
-  document.getElementById('ob4-back').addEventListener('click',  () => obGoTo(3));
-  document.getElementById('ob4-next').addEventListener('click',  () => { obRenderScreen5(); obGoTo(5); });
+  document.getElementById('ob4-back').addEventListener('click', () => obGoTo(3));
+  document.getElementById('ob4-next').addEventListener('click', () => obGoTo(5));
+  document.querySelectorAll('.ob4-style-card').forEach(card => {
+    card.addEventListener('click', () => {
+      state.heroStyle = card.dataset.style;
+      save(); ob4Refresh();
+    });
+  });
   document.getElementById('ob5-back').addEventListener('click',  () => obGoTo(4));
   document.getElementById('ob5-enter').addEventListener('click', obFinish);
 

@@ -416,12 +416,49 @@
       </div>
     </div>
 
-    <!-- ═══ SCREEN 4: SPRITE BUILDER (stub — built next) ═══ -->
+    <!-- ═══ SCREEN 4: SPRITE BUILDER ═══ -->
     <div class="ob-screen" id="ob-screen-4">
-      <div class="ob-panel">
-        <div class="ob-screen-heading">BUILD YOUR SPRITE</div>
-        <p class="ob-stub-note">Customize your hero: skin, hair, armor, weapon.</p>
-        <p class="ob-stub-note ob-stub-dim">Full sprite builder coming soon — use the HERO tab after launch.</p>
+      <div class="ob-panel ob4-panel">
+        <div class="ob2-heading-wrap">
+          <div class="ob2-rule"></div>
+          <div class="ob-screen-heading">BUILD YOUR SPRITE</div>
+          <div class="ob2-rule ob2-rule-r"></div>
+        </div>
+        <p class="ob3-sub">Forge your hero's look. Changes carry straight into the dungeon.</p>
+
+        <div class="ob4-layout">
+          <!-- Left: live preview + style picker -->
+          <div class="ob4-preview-col">
+            <div id="ob4-sprite-preview" class="ob4-sprite-wrap"></div>
+            <div class="ob4-style-grid">
+              <div class="ob4-style-card" data-style="default">
+                <div class="ob4-style-mini" id="ob4-mini-default"></div>
+                <div class="ob4-style-label">KNIGHT</div>
+              </div>
+              <div class="ob4-style-card" data-style="lady">
+                <div class="ob4-style-mini" id="ob4-mini-lady"></div>
+                <div class="ob4-style-label">RANGER</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: swatch controls -->
+          <div class="ob4-controls-col">
+            <div class="ob4-section">
+              <div class="ob4-section-label">SKIN TONE</div>
+              <div class="ob4-swatches" id="ob4-skin"></div>
+            </div>
+            <div class="ob4-section">
+              <div class="ob4-section-label">HAIR COLOR</div>
+              <div class="ob4-swatches" id="ob4-hair"></div>
+            </div>
+            <div class="ob4-section">
+              <div class="ob4-section-label">ARMOR COLOR</div>
+              <div class="ob4-swatches" id="ob4-armor"></div>
+            </div>
+          </div>
+        </div>
+
         <div class="ob-nav-row">
           <button class="ob-back-btn" id="ob4-back">← BACK</button>
           <button class="ob-cta ob-cta-sm" id="ob4-next">CONTINUE →</button>

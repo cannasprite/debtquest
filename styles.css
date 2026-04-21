@@ -1055,6 +1055,63 @@ body::before {
   80%     { transform: translateX(4px); }
 }
 
+/* ── SCREEN 4: SPRITE BUILDER ── */
+#ob-screen-4 {
+  background:
+    radial-gradient(ellipse at 12% 50%, rgba(20,0,60,.22) 0%, transparent 52%),
+    radial-gradient(ellipse at 88% 50%, rgba(20,0,60,.22) 0%, transparent 52%),
+    rgba(3,3,12,.94);
+}
+.ob4-panel { max-width: 600px; }
+
+.ob4-layout { display: flex; gap: 20px; align-items: flex-start; }
+
+.ob4-preview-col { display: flex; flex-direction: column; align-items: center; gap: 12px; flex-shrink: 0; }
+.ob4-sprite-wrap {
+  background: rgba(255,255,255,.02); border: 1px solid rgba(255,215,0,.15);
+  padding: 14px; display: flex; align-items: center; justify-content: center;
+  min-width: 80px; min-height: 80px;
+  box-shadow: 0 0 20px rgba(255,215,0,.06);
+}
+
+.ob4-style-grid { display: flex; gap: 8px; }
+.ob4-style-card {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  padding: 6px 8px; cursor: pointer; border: 2px solid var(--border);
+  background: var(--card); transition: border-color .12s, background .12s;
+}
+.ob4-style-card:hover      { border-color: var(--gold-dim); }
+.ob4-style-card.selected   { border-color: var(--gold); background: rgba(255,215,0,.07); }
+.ob4-style-mini            { line-height: 0; }
+.ob4-style-label           { font-size: 5px; color: var(--dim); letter-spacing: .5px; }
+.ob4-style-card.selected .ob4-style-label { color: var(--gold); }
+
+.ob4-controls-col { flex: 1; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.ob4-section      { display: flex; flex-direction: column; gap: 7px; }
+.ob4-section-label { font-size: 6px; color: var(--dim); letter-spacing: 1px; }
+.ob4-swatches     { display: flex; flex-wrap: wrap; gap: 5px; }
+
+.ob4-swatch {
+  width: 22px; height: 22px; cursor: pointer; border: 2px solid transparent;
+  transition: border-color .1s, transform .1s, box-shadow .1s;
+}
+.ob4-swatch:hover    { border-color: var(--gold-dim); transform: scale(1.1); }
+.ob4-swatch.selected { border-color: var(--gold); transform: scale(1.15); box-shadow: 0 0 6px rgba(255,215,0,.45); }
+
+.ob4-swatch-reset {
+  width: 22px; height: 22px; cursor: pointer; border: 2px solid var(--border);
+  background: var(--card); color: var(--dim); font-size: 11px;
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color .1s, color .1s;
+}
+.ob4-swatch-reset:hover    { border-color: var(--gold-dim); color: var(--text); }
+.ob4-swatch-reset.selected { border-color: var(--gold); color: var(--gold); }
+
+@media (max-width: 500px) {
+  .ob4-layout { flex-direction: column; align-items: center; }
+  .ob4-preview-col { flex-direction: row; align-items: flex-start; gap: 16px; }
+}
+
 #ob5-preview   { margin: 8px 0; }
 #ob5-hero-name { font-size: 12px; color: var(--gold); letter-spacing: 2px; }
 #ob5-stats     { font-size: 6px; color: var(--dim); line-height: 2.5; margin-bottom: 6px; }
