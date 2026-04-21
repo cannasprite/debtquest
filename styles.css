@@ -721,6 +721,26 @@ body::before {
   border-color: var(--gold); box-shadow: 0 0 8px var(--gold-glow);
   transform: scale(1.12);
 }
+#he-style-grid {
+  display: flex; gap: 12px; flex-wrap: wrap;
+}
+.he-style-card {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  padding: 10px 14px; cursor: pointer;
+  background: var(--card); border: 2px solid var(--border);
+  transition: border-color .12s, background .12s, box-shadow .12s;
+  min-width: 72px;
+}
+.he-style-card:hover    { border-color: var(--gold-dim); }
+.he-style-card.selected {
+  border-color: var(--gold); background: rgba(255,215,0,.06);
+  box-shadow: 0 0 12px var(--gold-glow);
+}
+.he-style-preview { line-height: 0; }
+.he-style-preview svg { image-rendering: pixelated; }
+.he-style-name { font-size: 6px; color: var(--dim); letter-spacing: 1px; }
+.he-style-card.selected .he-style-name { color: var(--gold); }
+
 .he-swatch-reset {
   background: var(--card) !important; color: var(--dim);
   display: flex; align-items: center; justify-content: center;

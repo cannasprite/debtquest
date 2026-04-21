@@ -268,6 +268,7 @@ const state = {
   playerName:     '',
   playerClass:    'slayer',
   heroCustom:     { hair: null, skin: null, armor: null },
+  heroStyle:      'default',
   pendingChest:   null,
   manualScore:    null,
   scoreUpdateDate:null,
@@ -293,6 +294,7 @@ function save() {
     playerName:    state.playerName,
     playerClass:   state.playerClass,
     heroCustom:    state.heroCustom,
+    heroStyle:     state.heroStyle,
     pendingChest:    state.pendingChest,
     manualScore:     state.manualScore,
     scoreUpdateDate: state.scoreUpdateDate,
@@ -351,7 +353,7 @@ function spr(rows, pal, scale = 5) {
 }
 
 // ── HERO (12 wide × 26 tall, scale 5 = 60×130px) ────────────────────────────
-function heroSVG(tier) {
+function heroSVG(tier, scale = 5) {
   // Per-tier color palette
   const T = [
     { A:'#9B8060', a:'#6B5030', W:'#A8A8A8', w:'#686868', H:'#3A2A12', h:'#5A4020', cp:null    }, // 0 cloth
@@ -447,7 +449,74 @@ function heroSVG(tier) {
     P: PA, p: pa,
     B: c.armor?.shadow || BT,
   };
-  return spr(heroRows, pal, 5);
+  return spr(heroRows, pal, scale);
+}
+
+// ── HERO FEMININE ─────────────────────────────────────────────────────────────
+function heroFemSVG(tier, scale = 5) {
+  const T = [
+    { A:'#9B8060', a:'#6B5030', W:'#A8A8A8', w:'#686868', H:'#3A2A12', h:'#5A4020', cp:null    },
+    { A:'#8B6010', a:'#5A3A00', W:'#C0C0C0', w:'#808080', H:'#8B6010', h:'#5A3A00', cp:null    },
+    { A:'#9090A0', a:'#606070', W:'#E8E8E8', w:'#A0A0B0', H:'#808090', h:'#505060', cp:null    },
+    { A:'#6080A0', a:'#405060', W:'#FFD700', w:'#CC9900', H:'#506070', h:'#304050', cp:'#506070'},
+    { A:'#503090', a:'#301860', W:'#FF5050', w:'#CC1010', H:'#401880', h:'#200840', cp:'#8B0000'},
+    { A:'#D4A800', a:'#906000', W:'#FFFFFF', w:'#DDDDDD', H:'#C08000', h:'#806000', cp:'#8B6914'},
+  ][Math.min(tier, 5)];
+
+  const SK='#FDBCB4', sk='#D8907A', EY='#222222';
+  const PA='#2A2A70', pa='#18185A';
+  const bl='#4A2A08';
+
+  const c = state.heroCustom || {};
+  const pal = {
+    S: c.skin?.val    || SK,
+    s: c.skin?.shadow || sk,
+    E: EY,
+    H: c.hair?.val    || T.H,
+    h: c.hair?.shadow || T.h,
+    A: c.armor?.val   || T.A,
+    a: c.armor?.shadow|| T.a,
+    W: T.W, w: T.w,
+    X: T.cp || c.armor?.val || T.A,
+    b: bl, P: PA, p: pa,
+    B: c.armor?.shadow || T.a,
+  };
+
+  const femRows = [
+    // Hair top (wider)
+    tier===0 ? '..HHHHHHHH....' : '...HHHHHH...',
+    // Head sides: long flowing hair at tier 0, helmet at tier 1+
+    tier>=1  ? '..HSSSSSSH..'   : '.HHSSSSSSSHH.',
+    // Eyes
+    tier>=1  ? '..HSsESEsH..'   : '.HHSsESEsHH.',
+    // Lower face: hair framing wide at tier 0
+    tier>=1  ? '....SSSSSS....' : '.HHsSSSSsSHH.',
+    // Chin
+    '....sSSSSs....',
+    // Neck: ponytail visible on right at all tiers, long hair on left at tier 0
+    tier===0  ? '.H...SSSS....H' : '.....SSSS..HH',
+    // Shoulders: cape/hair draping at tier 0, ponytail at tier 1+
+    tier>=4   ? '..XAAAAAA...HH' :
+    tier===0  ? 'H..AAAAAA....H' : '...AAAAAA..HH',
+    // Torso + sword: ponytail bottom
+    tier===0  ? 'WH.AAAAAA....H' : 'W..AAAAAA..H.',
+    tier===0  ? 'WH.AAAAAA.....' : 'W..AAAAAA....',
+    // Belt
+    'ww.AbbbbbA...',
+    // Shield + lower torso
+    tier>=2  ? '..aaAAAAA.W.' : '...AAAAA..W.',
+    tier>=2  ? '..aaAAAAA.w.' : '...AAAAA..w.',
+    // Legs
+    '....PPAPPPP..',
+    '....PPAPPPP..',
+    '....pPpppP...',
+    // Boots
+    '....BBBBB....',
+    '....BBBBB....',
+    tier>=5  ? '...WBBBBBW..' : '....BBBBB....',
+  ];
+
+  return spr(femRows, pal, scale);
 }
 
 // ── GOBLIN (20 wide × 20 tall) ───────────────────────────────────────────────
@@ -1029,7 +1098,7 @@ function renderHero() {
   const title = getTitleForXP(state.xp);
   const next  = getNextTitle(state.xp);
 
-  document.getElementById('hero-sprite').innerHTML = heroSVG(title.tier);
+  document.getElementById('hero-sprite').innerHTML = state.heroStyle === 'lady' ? heroFemSVG(title.tier) : heroSVG(title.tier);
   document.getElementById('hero-name').textContent = state.playerName || 'SPRITE';
   document.getElementById('hero-gear').textContent = title.gear;
 
@@ -1442,8 +1511,10 @@ function buildSwatches(containerId, palette, key) {
 
 function renderHeroEditor() {
   const tier = getTitleForXP(state.xp).tier;
+  const isLady = state.heroStyle === 'lady';
+
   const wrap = document.getElementById('he-sprite-wrap');
-  if (wrap) wrap.innerHTML = heroSVG(tier);
+  if (wrap) wrap.innerHTML = isLady ? heroFemSVG(tier) : heroSVG(tier);
 
   const nameEl = document.getElementById('he-hero-name');
   if (nameEl) nameEl.textContent = state.playerName || 'SPRITE';
@@ -1454,6 +1525,16 @@ function renderHeroEditor() {
 
   const nameInput = document.getElementById('he-name');
   if (nameInput) nameInput.value = state.playerName || '';
+
+  // Mini style preview cards
+  const pd = document.getElementById('he-style-preview-default');
+  const pl = document.getElementById('he-style-preview-lady');
+  if (pd) pd.innerHTML = heroSVG(tier, 2);
+  if (pl) pl.innerHTML = heroFemSVG(tier, 2);
+
+  document.querySelectorAll('.he-style-card').forEach(c => {
+    c.classList.toggle('selected', c.dataset.style === state.heroStyle);
+  });
 
   buildSwatches('he-hair',  HAIR_COLORS,  'hair');
   buildSwatches('he-skin',  SKIN_TONES,   'skin');
@@ -1560,6 +1641,13 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('score-input').addEventListener('keydown', e => {
     if (e.key === 'Enter') document.getElementById('score-update-btn').click();
+  });
+
+  document.querySelectorAll('.he-style-card').forEach(card => {
+    card.addEventListener('click', () => {
+      state.heroStyle = card.dataset.style;
+      save(); renderHeroEditor(); renderHero();
+    });
   });
 
   document.getElementById('he-name-btn').addEventListener('click', () => {
