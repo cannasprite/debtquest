@@ -1115,9 +1115,74 @@ body::before {
   .ob4-preview-col { flex-direction: row; align-items: flex-start; gap: 16px; }
 }
 
-#ob5-preview   { margin: 8px 0; }
-#ob5-hero-name { font-size: 12px; color: var(--gold); letter-spacing: 2px; }
-#ob5-stats     { font-size: 6px; color: var(--dim); line-height: 2.5; margin-bottom: 6px; }
+/* ── SCREEN 5: ENTER THE DUNGEON ── */
+#ob-screen-5 {
+  background:
+    radial-gradient(ellipse at 10% 50%, rgba(100,30,0,.25) 0%, transparent 45%),
+    radial-gradient(ellipse at 90% 50%, rgba(100,30,0,.25) 0%, transparent 45%),
+    radial-gradient(ellipse at 50% 100%, rgba(60,15,0,.4)  0%, transparent 60%),
+    rgba(3,3,12,.97);
+}
+.ob5-panel {
+  max-width: 520px; align-items: center; text-align: center;
+  gap: 10px; padding: 20px 24px;
+}
+
+.ob5-arch-row {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+}
+.ob5-torch { flex-shrink: 0; line-height: 0; }
+.ob5-title-wrap { flex: 1; display: flex; align-items: center; gap: 8px; }
+
+.ob5-title {
+  flex: 1; font-size: 11px; color: var(--gold); letter-spacing: 2px; white-space: nowrap;
+  text-shadow: 0 0 18px rgba(255,215,0,.55), 0 0 36px rgba(255,100,0,.25);
+  animation: ob-glow 2.2s ease-in-out infinite alternate;
+}
+
+.ob5-sprite-wrap { margin: 2px 0; line-height: 0; }
+
+.ob5-hero-name {
+  font-size: 16px; color: var(--gold); letter-spacing: 3px;
+  text-shadow: 0 0 16px rgba(255,215,0,.6);
+  animation: ob-glow 2.6s ease-in-out infinite alternate;
+}
+.ob5-hero-class { font-size: 7px; color: var(--dim); letter-spacing: 1px; }
+
+.ob5-stats-row {
+  display: flex; align-items: center; gap: 18px;
+  padding: 10px 16px; border: 1px solid rgba(255,215,0,.12);
+  background: rgba(255,215,0,.04); width: 100%;
+  justify-content: center;
+}
+.ob5-stat { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.ob5-stat-val { font-size: 11px; color: var(--text); }
+.ob5-stat-lbl { font-size: 5px; color: var(--dim); letter-spacing: 1px; }
+.ob5-divider  { color: rgba(255,215,0,.2); font-size: 20px; line-height: 1; }
+
+.ob5-roster-wrap { width: 100%; display: flex; flex-direction: column; gap: 6px; }
+.ob5-roster-label {
+  font-size: 6px; color: var(--dim); letter-spacing: 1px; text-align: left;
+  border-bottom: 1px solid var(--border); padding-bottom: 4px;
+}
+.ob5-roster {
+  display: flex; flex-direction: column; gap: 4px;
+  max-height: 130px; overflow-y: auto;
+}
+.ob5-roster-row {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,.02); border: 1px solid rgba(255,255,255,.05);
+  padding: 5px 8px; text-align: left;
+  animation: modal-in .15s ease;
+}
+.ob5-roster-icon { font-size: 18px; flex-shrink: 0; }
+.ob5-roster-name { flex: 1; font-size: 6px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ob5-roster-meta { font-size: 5px; color: var(--dim); text-transform: uppercase; flex-shrink: 0; }
+.ob5-roster-amt  { font-size: 6px; color: var(--gold); flex-shrink: 0; }
+.ob5-roster-empty { font-size: 6px; color: var(--dim); padding: 10px; text-align: center; line-height: 2.2; }
+
+.ob5-nav { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 4px; }
+.ob5-enter-btn { font-size: 9px; padding: 14px 20px; animation: ob-pulse 2s ease-in-out infinite; }
 
 /* ── RESPONSIVE ── */
 @media (max-width: 600px) {

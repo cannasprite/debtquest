@@ -1789,18 +1789,56 @@ function obFinish() {
 }
 
 function obRenderScreen5() {
-  const name   = document.getElementById('ob-name')?.value.trim() || 'SPRITE';
-  const cls    = document.querySelector('input[name="ob-class"]:checked')?.value || 'slayer';
-  const debts  = OB.debts.length > 0 ? OB.debts : state.debts;
-  const total  = debts.reduce((s, d) => s + d.amount, 0);
-  const clsLbl = { slayer: 'Debt Slayer', mage: 'Budget Mage', rogue: 'Frugal Rogue' };
+  const name    = document.getElementById('ob-name')?.value.trim() || 'SPRITE';
+  const cls     = document.querySelector('input[name="ob-class"]:checked')?.value || 'slayer';
+  const debts   = OB.debts.length > 0 ? OB.debts : state.debts;
+  const total   = debts.reduce((s, d) => s + d.amount, 0);
+  const clsLbl  = { slayer: 'Debt Slayer',  mage: 'Budget Mage',   rogue: 'Frugal Rogue' };
+  const clsIcon = { slayer: '⚔',           mage: '🔮',             rogue: '🗡' };
 
+  // Sprite (scale 7 for dramatic size)
   const prev = document.getElementById('ob5-preview');
-  const nm   = document.getElementById('ob5-hero-name');
-  const st   = document.getElementById('ob5-stats');
-  if (prev) prev.innerHTML = state.heroStyle === 'lady' ? heroFemSVG(0) : heroSVG(0);
-  if (nm)   nm.textContent  = name;
-  if (st)   st.innerHTML    = `${clsLbl[cls] || 'Hero'}<br>${debts.length} monster${debts.length !== 1 ? 's' : ''} await &nbsp;·&nbsp; ${fmt(total)} total debt`;
+  if (prev) prev.innerHTML = state.heroStyle === 'lady' ? heroFemSVG(0, 7) : heroSVG(0, 7);
+
+  // Name + class
+  const nm = document.getElementById('ob5-hero-name');
+  const cl = document.getElementById('ob5-hero-class');
+  if (nm) nm.textContent = name;
+  if (cl) cl.textContent = `${clsIcon[cls] || '⚔'}  ${clsLbl[cls] || 'Hero'}`;
+
+  // Stats
+  const sr = document.getElementById('ob5-stats-row');
+  if (sr) sr.innerHTML = `
+    <div class="ob5-stat">
+      <span class="ob5-stat-val">${debts.length}</span>
+      <span class="ob5-stat-lbl">MONSTERS</span>
+    </div>
+    <span class="ob5-divider">|</span>
+    <div class="ob5-stat">
+      <span class="ob5-stat-val">${fmt(total)}</span>
+      <span class="ob5-stat-lbl">TOTAL DEBT</span>
+    </div>
+  `;
+
+  // Monster roster
+  const roster = document.getElementById('ob5-roster');
+  if (roster) {
+    roster.innerHTML = debts.length === 0
+      ? `<div class="ob5-roster-empty">No monsters yet — add debts via the SUMMON tab after launch.</div>`
+      : debts.map(d => `
+          <div class="ob5-roster-row">
+            <span class="ob5-roster-icon">${MONSTER_ICONS[d.type] || '👹'}</span>
+            <span class="ob5-roster-name">${d.name}</span>
+            <span class="ob5-roster-meta">${d.type} · F${d.floor}</span>
+            <span class="ob5-roster-amt">${fmt(d.amount)}</span>
+          </div>`).join('');
+  }
+
+  // Torches (render once)
+  const tl = document.getElementById('ob5-torch-l');
+  const tr = document.getElementById('ob5-torch-r');
+  if (tl && !tl.hasChildNodes()) tl.innerHTML = torchSVG();
+  if (tr && !tr.hasChildNodes()) tr.innerHTML = torchSVG();
 }
 
 function switchTab(name) {

@@ -468,15 +468,35 @@
 
     <!-- ═══ SCREEN 5: ENTER THE DUNGEON ═══ -->
     <div class="ob-screen" id="ob-screen-5">
-      <div class="ob-panel ob-panel-final">
-        <div class="ob-screen-heading">ENTER THE DUNGEON</div>
-        <div id="ob5-preview"></div>
-        <div id="ob5-hero-name"></div>
-        <div id="ob5-stats"></div>
-        <div class="ob-nav-row">
-          <button class="ob-back-btn" id="ob5-back">← BACK</button>
-          <button class="ob-cta" id="ob5-enter">⚔ ENTER THE DUNGEON</button>
+      <div class="ob-panel ob5-panel">
+
+        <div class="ob5-arch-row">
+          <div class="ob5-torch" id="ob5-torch-l"></div>
+          <div class="ob5-title-wrap">
+            <div class="ob2-rule"></div>
+            <div class="ob5-title">ENTER THE DUNGEON</div>
+            <div class="ob2-rule ob2-rule-r"></div>
+          </div>
+          <div class="ob5-torch" id="ob5-torch-r"></div>
         </div>
+
+        <div id="ob5-preview" class="ob5-sprite-wrap"></div>
+
+        <div id="ob5-hero-name" class="ob5-hero-name"></div>
+        <div id="ob5-hero-class" class="ob5-hero-class"></div>
+
+        <div class="ob5-stats-row" id="ob5-stats-row"></div>
+
+        <div class="ob5-roster-wrap">
+          <div class="ob5-roster-label">YOUR MONSTERS</div>
+          <div class="ob5-roster" id="ob5-roster"></div>
+        </div>
+
+        <div class="ob5-nav">
+          <button class="ob-back-btn" id="ob5-back">← BACK</button>
+          <button class="ob-cta ob5-enter-btn" id="ob5-enter">⚔ ENTER THE DUNGEON</button>
+        </div>
+
       </div>
     </div>
 
