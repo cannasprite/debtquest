@@ -101,6 +101,16 @@ const LOOT = {
   ogre:    ["Ogre Club Splinter", "Smashed Piggy Bank", "Blunt Force Receipt"],
 };
 
+// ── GEAR CHEST LOOT ──────────────────────────────────────────────────────────
+const GEAR_CHEST_LOOT = [
+  'Iron Buckler',       'Leather Greaves',    'Copper Amulet',
+  'Healing Herb',       'Lucky Rabbit\'s Foot','Steel-tipped Boots',
+  'Chainmail Coif',     'Enchanted Ring',     'Battle Rations',
+  'Map of Savings',     'Thrifty Cloak',      'Budgeter\'s Tome',
+  'Anti-Debt Charm',    'Silver Pauldron',    'Mana Flask',
+  'Scroll of Compound Interest (reversed)',   'Shield of Frugality',
+];
+
 // ── MONSTER TAUNTS LOOKUP ────────────────────────────────────────────────────
 const MONSTER_TAUNTS = {
   goblin:  ['"You\'ll be paying me forever!"', '"Every missed payment feeds my power!"', '"Interest compounds daily. Sleep well."', '"Your degree was worth every copper... said no one."'],
@@ -258,6 +268,7 @@ const state = {
   playerName:     '',
   playerClass:    'slayer',
   heroCustom:     { hair: null, skin: null, armor: null },
+  pendingChest:   null,
 };
 
 // ── PERSISTENCE ───────────────────────────────────────────────────────────────
@@ -280,6 +291,7 @@ function save() {
     playerName:    state.playerName,
     playerClass:   state.playerClass,
     heroCustom:    state.heroCustom,
+    pendingChest:  state.pendingChest,
   }));
 }
 
@@ -840,6 +852,19 @@ function attack() {
   state.paymentCount++;
   enemy.paid         = Math.min(enemy.amount, enemy.paid + effective);
 
+  // Check HP threshold chests (75%, 50%, 25%)
+  if (!enemy.chestsOpened) enemy.chestsOpened = [];
+  const pctNow = hpPct(enemy);
+  for (const t of [75, 50, 25]) {
+    if (pctNow <= t && !enemy.chestsOpened.includes(t) && !enemy.defeated) {
+      enemy.chestsOpened.push(t);
+      const gear = GEAR_CHEST_LOOT[Math.floor(Math.random() * GEAR_CHEST_LOOT.length)];
+      state.pendingChest = { gear, enemyName: enemy.name, threshold: t };
+      addLog(`🎁 Treasure chest at ${t}% HP! Claim it!`, 'event');
+      break;
+    }
+  }
+
   // XP: 1 per dollar + event bonus
   const xpGained = Math.round(amount + (event.mult > 1 ? amount * 0.3 : 0));
   state.xp += xpGained;
@@ -945,6 +970,33 @@ function render() {
   renderEnemy();
   renderRoster();
   renderLog();
+  renderChest();
+}
+
+function renderChest() {
+  const el = document.getElementById('chest-alert');
+  if (!el) return;
+  if (state.pendingChest) {
+    el.classList.remove('hidden');
+    document.getElementById('chest-gear-name').textContent = state.pendingChest.gear;
+  } else {
+    el.classList.add('hidden');
+  }
+}
+
+function claimChest() {
+  if (!state.pendingChest) return;
+  const { gear, enemyName } = state.pendingChest;
+  state.loot.push({ item: gear, from: enemyName + ' (chest)' });
+  state.xp += 20;
+  addLog(`🎁 CHEST OPENED: ${gear} (+20 XP)`, 'loot');
+  state.pendingChest = null;
+  save();
+  render();
+  showModal(null, [], [], {
+    icon: '🎁', title: 'CHEST OPENED!',
+    body: `You found: <strong>${gear}</strong>!<br><br>+20 XP rewarded for your progress.`,
+  });
 }
 
 function renderLog() {
@@ -1462,6 +1514,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('attack-btn').addEventListener('click', attack);
+  document.getElementById('chest-claim-btn').addEventListener('click', claimChest);
   document.getElementById('payment-input').addEventListener('keydown', e => {
     if (e.key === 'Enter') attack();
   });
