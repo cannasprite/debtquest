@@ -276,37 +276,99 @@
 
     <!-- ═══ SCREEN 2: CREATE YOUR LEGEND ═══ -->
     <div class="ob-screen" id="ob-screen-2">
-      <div class="ob-panel">
-        <div class="ob-screen-heading">CREATE YOUR LEGEND</div>
+      <div class="ob-panel ob2-panel">
+
+        <!-- Decorative heading -->
+        <div class="ob2-heading-wrap">
+          <div class="ob2-rule"></div>
+          <div class="ob-screen-heading">CREATE YOUR LEGEND</div>
+          <div class="ob2-rule ob2-rule-r"></div>
+        </div>
+
+        <!-- Account fields -->
         <div class="ob-field">
           <label for="ob-name">HERO NAME</label>
-          <input id="ob-name" type="text" placeholder="Your name..." maxlength="20" autocomplete="off">
+          <input id="ob-name" type="text" placeholder="What shall you be called?" maxlength="20" autocomplete="off">
         </div>
         <div class="ob-field">
-          <label for="ob-email">EMAIL <span class="ob-optional">(optional)</span></label>
+          <label for="ob-email">EMAIL <span class="ob-optional">(optional — not stored or sent)</span></label>
           <input id="ob-email" type="email" placeholder="you@example.com" autocomplete="off">
         </div>
-        <div class="ob-class-label">CHOOSE YOUR CLASS</div>
-        <div class="ob-class-grid">
-          <label class="ob-class-card">
-            <input type="radio" name="ob-class" value="slayer" checked>
-            <div class="ob-class-icon">⚔</div>
-            <div class="ob-class-name">DEBT SLAYER</div>
-            <div class="ob-class-desc">+10% bonus damage on every hit</div>
-          </label>
-          <label class="ob-class-card">
-            <input type="radio" name="ob-class" value="mage">
-            <div class="ob-class-icon">🔮</div>
-            <div class="ob-class-name">BUDGET MAGE</div>
-            <div class="ob-class-desc">Lucky Month events 2× more often</div>
-          </label>
-          <label class="ob-class-card">
-            <input type="radio" name="ob-class" value="rogue">
-            <div class="ob-class-icon">🗡</div>
-            <div class="ob-class-name">FRUGAL ROGUE</div>
-            <div class="ob-class-desc">Critical Hits 2× more often</div>
-          </label>
+
+        <!-- Class selection -->
+        <div class="ob2-class-section">
+          <div class="ob2-class-header">— CHOOSE YOUR CLASS —</div>
+          <div class="ob-class-grid ob2-class-grid">
+
+            <label class="ob-class-card ob2-card">
+              <input type="radio" name="ob-class" value="slayer" checked>
+              <div class="ob2-badge ob2-badge-slayer">⚔</div>
+              <div class="ob-class-name">DEBT SLAYER</div>
+              <div class="ob2-lore">"Strike fast. Pay hard. Debts fear the blade."</div>
+              <div class="ob2-bonus">+10% damage every hit</div>
+              <div class="ob2-stats">
+                <div class="ob2-stat-row">
+                  <span>PWR</span>
+                  <div class="ob2-bar"><div class="ob2-fill ob2-fill-red" style="width:85%"></div></div>
+                </div>
+                <div class="ob2-stat-row">
+                  <span>LUCK</span>
+                  <div class="ob2-bar"><div class="ob2-fill ob2-fill-green" style="width:40%"></div></div>
+                </div>
+                <div class="ob2-stat-row">
+                  <span>CRIT</span>
+                  <div class="ob2-bar"><div class="ob2-fill ob2-fill-gold" style="width:50%"></div></div>
+                </div>
+              </div>
+            </label>
+
+            <label class="ob-class-card ob2-card">
+              <input type="radio" name="ob-class" value="mage">
+              <div class="ob2-badge ob2-badge-mage">🔮</div>
+              <div class="ob-class-name">BUDGET MAGE</div>
+              <div class="ob2-lore">"Fortune multiplies for the frugal sorcerer."</div>
+              <div class="ob2-bonus">Lucky Month hits 2× more</div>
+              <div class="ob2-stats">
+                <div class="ob2-stat-row">
+                  <span>PWR</span>
+                  <div class="ob2-bar"><div class="ob2-fill ob2-fill-red" style="width:50%"></div></div>
+                </div>
+                <div class="ob2-stat-row">
+                  <span>LUCK</span>
+                  <div class="ob2-bar"><div class="ob2-fill ob2-fill-green" style="width:90%"></div></div>
+                </div>
+                <div class="ob2-stat-row">
+                  <span>CRIT</span>
+                  <div class="ob2-bar"><div class="ob2-fill ob2-fill-gold" style="width:45%"></div></div>
+                </div>
+              </div>
+            </label>
+
+            <label class="ob-class-card ob2-card">
+              <input type="radio" name="ob-class" value="rogue">
+              <div class="ob2-badge ob2-badge-rogue">🗡</div>
+              <div class="ob-class-name">FRUGAL ROGUE</div>
+              <div class="ob2-lore">"Strike from the shadows. Debts die in the dark."</div>
+              <div class="ob2-bonus">Critical Hits land 2× more</div>
+              <div class="ob2-stats">
+                <div class="ob2-stat-row">
+                  <span>PWR</span>
+                  <div class="ob2-bar"><div class="ob2-fill ob2-fill-red" style="width:60%"></div></div>
+                </div>
+                <div class="ob2-stat-row">
+                  <span>LUCK</span>
+                  <div class="ob2-bar"><div class="ob2-fill ob2-fill-green" style="width:55%"></div></div>
+                </div>
+                <div class="ob2-stat-row">
+                  <span>CRIT</span>
+                  <div class="ob2-bar"><div class="ob2-fill ob2-fill-gold" style="width:90%"></div></div>
+                </div>
+              </div>
+            </label>
+
+          </div>
         </div>
+
         <div class="ob-nav-row">
           <button class="ob-back-btn" id="ob2-back">← BACK</button>
           <button class="ob-cta ob-cta-sm" id="ob2-next">CONTINUE →</button>

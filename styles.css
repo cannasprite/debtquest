@@ -857,6 +857,82 @@ body::before {
   50%     { box-shadow: 0 0 30px rgba(255,215,0,.45); }
 }
 
+/* ── SCREEN 2: CREATE YOUR LEGEND ── */
+#ob-screen-2 {
+  background:
+    radial-gradient(ellipse 220px 400px at 0% 50%,   rgba(255,110,20,.05) 0%, transparent 100%),
+    radial-gradient(ellipse 220px 400px at 100% 50%, rgba(255,110,20,.05) 0%, transparent 100%),
+    rgba(3,3,12,.96);
+}
+
+.ob2-panel { max-width: 620px; }
+
+.ob2-heading-wrap {
+  display: flex; align-items: center; gap: 12px;
+}
+.ob2-rule {
+  flex: 1; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border));
+}
+.ob2-rule-r {
+  background: linear-gradient(90deg, var(--border), transparent);
+}
+
+.ob2-class-section { display: flex; flex-direction: column; gap: 8px; }
+.ob2-class-header   { font-size: 6px; color: var(--dim); text-align: center; letter-spacing: 2px; }
+.ob2-class-grid     { gap: 10px; }
+
+/* Enhanced class card */
+.ob2-card {
+  padding: 14px 10px; gap: 7px; align-items: center;
+  position: relative; overflow: hidden;
+}
+.ob2-card::before {
+  content: ''; position: absolute; inset: 0; opacity: 0;
+  transition: opacity .2s;
+}
+.ob-class-card.ob2-card:has(input:checked)::before { opacity: 1; }
+
+.ob2-card:has(input[value="slayer"]:checked) { border-color: var(--red);  box-shadow: 0 0 18px rgba(231,76,60,.2);  }
+.ob2-card:has(input[value="mage"]:checked)   { border-color: var(--purple); box-shadow: 0 0 18px rgba(142,68,173,.2); }
+.ob2-card:has(input[value="rogue"]:checked)  { border-color: #2ecc71; box-shadow: 0 0 18px rgba(46,204,113,.2); }
+
+.ob2-badge {
+  font-size: 26px;
+  filter: drop-shadow(0 0 6px rgba(255,215,0,.3));
+  transition: filter .2s, transform .2s;
+}
+.ob-class-card.ob2-card:has(input:checked) .ob2-badge {
+  filter: drop-shadow(0 0 14px rgba(255,215,0,.6));
+  transform: scale(1.15);
+}
+.ob2-badge-slayer { filter: drop-shadow(0 0 6px rgba(231,76,60,.4)); }
+.ob2-badge-mage   { filter: drop-shadow(0 0 6px rgba(142,68,173,.4)); }
+.ob2-badge-rogue  { filter: drop-shadow(0 0 6px rgba(46,204,113,.4)); }
+
+.ob2-lore {
+  font-size: 5px; color: #5a5070; line-height: 2;
+  text-align: center; padding: 0 2px;
+}
+.ob2-bonus {
+  font-size: 5px; color: var(--green);
+  padding: 3px 7px; border: 1px solid rgba(39,174,96,.35);
+  text-align: center; letter-spacing: .5px;
+}
+.ob2-card:has(input[value="slayer"]:checked) .ob2-bonus { color: var(--red);   border-color: rgba(231,76,60,.4); }
+.ob2-card:has(input[value="mage"]:checked)   .ob2-bonus { color: var(--purple); border-color: rgba(142,68,173,.4); }
+.ob2-card:has(input[value="rogue"]:checked)  .ob2-bonus { color: #2ecc71; border-color: rgba(46,204,113,.4); }
+
+/* Stat bars */
+.ob2-stats     { width: 100%; display: flex; flex-direction: column; gap: 5px; margin-top: 2px; }
+.ob2-stat-row  { display: flex; align-items: center; gap: 5px; }
+.ob2-stat-row span { font-size: 4px; color: var(--dim); width: 22px; flex-shrink: 0; text-align: right; }
+.ob2-bar  { flex: 1; height: 4px; background: #0e0e1e; border: 1px solid #1a1a30; }
+.ob2-fill { height: 100%; transition: width .5s .1s ease; }
+.ob2-fill-red   { background: var(--red); }
+.ob2-fill-green { background: var(--green); }
+.ob2-fill-gold  { background: var(--gold); }
+
 /* ── SCREEN 2-5: PANEL ── */
 #ob-screen-2, #ob-screen-3, #ob-screen-4, #ob-screen-5 {
   background: rgba(3,3,12,.94);

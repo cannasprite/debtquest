@@ -1576,6 +1576,16 @@ function obInitScreen1() {
   if (tr && !tr.hasChildNodes()) tr.innerHTML = torchSVG();
 }
 
+function obInitScreen2() {
+  // Animate stat bars from 0 on each visit (force reflow trick)
+  document.querySelectorAll('.ob2-fill').forEach(el => {
+    const target = el.style.width;
+    el.style.width = '0%';
+    requestAnimationFrame(() => requestAnimationFrame(() => { el.style.width = target; }));
+  });
+  setTimeout(() => document.getElementById('ob-name')?.focus(), 180);
+}
+
 function obGoTo(n) {
   document.querySelectorAll('.ob-screen').forEach(s => s.classList.remove('active'));
   document.getElementById(`ob-screen-${n}`).classList.add('active');
@@ -1586,7 +1596,7 @@ function obGoTo(n) {
   });
   OB.step = n;
   if (n === 1) obInitScreen1();
-  if (n === 2) setTimeout(() => document.getElementById('ob-name')?.focus(), 120);
+  if (n === 2) obInitScreen2();
   if (n === 5) obRenderScreen5();
 }
 
