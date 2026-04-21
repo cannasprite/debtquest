@@ -78,11 +78,56 @@ function rollEvent() {
 // ── LOOT DROPS ────────────────────────────────────────────────────────────────
 const LOOT = {
   goblin:  ["Tattered Coin Pouch", "Goblin's Ear (+5 luck)", "Rusted Copper Ring"],
-  specter: ["Spectral Essence", "Ghost Coin", "Ledger Page Fragment"],
+  slime:   ["Slime Core", "Gooey Interest Token", "Blob Fragment"],
+  ghost:   ["Forgotten Bill Receipt", "Spectral Envelope", "Ghost Coin"],
+  rat:     ["Chewed Wallet", "Rat King's Tooth", "Gnawed Copper"],
+  specter: ["Spectral Essence", "Ledger Page Fragment", "Faded Invoice"],
   phantom: ["Phantom Dust", "Whisper Token", "Silver Sliver"],
   imp:     ["Imp's Tail (APR immunity)", "Mischief Potion", "Cursed Credit Scroll"],
+  vampire: ["Bloodless Ledger", "Fang of Compound Interest", "Crimson Credit Card"],
+  witch:   ["Hexed Invoice", "Cauldron Coin", "Cursed Late Fee Scroll"],
+  spider:  ["Debt Web Fragment", "Eight-Eyed Crystal", "Silk-Wrapped Statement"],
   troll:   ["Troll Bridge Key 🗝️", "Boss Ruby (+100 XP)", "Freedom Stone 💎"],
+  dragon:  ["Dragon Scale Fragment", "Hoard Ember", "Ancient Debt Tome"],
+  golem:   ["Stone of Bad Decisions", "Cracked Credit Tablet", "Iron Will Shard"],
+  ogre:    ["Ogre Club Splinter", "Smashed Piggy Bank", "Blunt Force Receipt"],
 };
+
+// ── MONSTER TAUNTS LOOKUP ────────────────────────────────────────────────────
+const MONSTER_TAUNTS = {
+  goblin:  ['"You\'ll be paying me forever!"', '"Every missed payment feeds my power!"', '"Interest compounds daily. Sleep well."', '"Your degree was worth every copper... said no one."'],
+  slime:   ['"I\'m small, but I multiply with interest!"', '"You can\'t squish what keeps growing!"', '"Cheap debt is still debt, adventurer."', '"I seep into everything. Especially your wallet."'],
+  ghost:   ['"I haunt your credit report long after you forget me."', '"Even the dead can collect on debts."', '"I am every forgotten subscription you still pay."', '"Boo. Also — you owe me."'],
+  rat:     ['"Small? Yes. Going away? No."', '"I gnaw at your finances every single day."', '"Ignore me and I\'ll chew through your savings."', '"Every forgotten fee feeds my kin."'],
+  specter: ['"I haunt your credit history from beyond!"', '"You can\'t outrun what you owe."', '"Every dollar you spend should be mine."'],
+  phantom: ['"Small debt, big guilt!"', '"I may be tiny, but I\'m still here."', '"Pay me first. I\'m the easiest."'],
+  imp:     ['"APR is my favorite spell!"', '"Late fees make me stronger!"', '"Buy now. Suffer later. Hehehe."'],
+  vampire: ['"I drain a little every month whether you like it or not."', '"Your APR is my favorite flavor."', '"Compound interest? We call that dinner."', '"I\'ve been feeding on your minimum payments for years."', '"You invited me in. The direct debit said so."'],
+  witch:   ['"I\'ve cursed your credit score with late fees!"', '"Every month you don\'t pay, my hex grows stronger."', '"Eye of newt, toe of frog, 24.99% APR."', '"My cauldron bubbles with your accumulated interest."'],
+  spider:  ['"I\'ve been weaving this debt web for months."', '"Trapped — just like your finances."', '"My eight eyes see every missed payment."', '"Struggle all you want. The interest holds."'],
+  troll:   ['"NONE SHALL PASS without a monthly payment!"', '"I am the debt that breaks adventurers!"', '"Your car depreciates. I do not."', '"60 months? More like forever. RARGH!"'],
+  dragon:  ['"I hoard gold. You hand it to me monthly."', '"My fire melts credit scores."', '"Centuries old. Your debt is young. I\'ll outlast it."', '"Every missed payment adds to my hoard."', '"I don\'t accept minimum payments. Only tribute."'],
+  golem:   ['"I was carved from your bad decisions."', '"Stone doesn\'t care about your excuses."', '"I am immovable. So is your debt."', '"Every late fee adds another stone to my body."'],
+  ogre:    ['"OGRE SMASH YOUR SAVINGS!"', '"Big debt. Big problem. Big ogre."', '"Me hungry. Credit score tasty."', '"Ogre been waiting. Ogre will keep waiting."', '"RARGH! Pay or ogre sit on your dreams!"'],
+};
+
+// Per-type suggested floor based on typical debt size
+const MONSTER_SUGGESTIONS = [
+  { maxAmount: 200,   type: 'rat',     floor: 1 },
+  { maxAmount: 500,   type: 'slime',   floor: 1 },
+  { maxAmount: 800,   type: 'ghost',   floor: 1 },
+  { maxAmount: 1200,  type: 'imp',     floor: 2 },
+  { maxAmount: 2000,  type: 'vampire', floor: 2 },
+  { maxAmount: 3500,  type: 'witch',   floor: 2 },
+  { maxAmount: 6000,  type: 'troll',   floor: 3 },
+  { maxAmount: 12000, type: 'dragon',  floor: 3 },
+  { maxAmount: Infinity, type: 'golem', floor: 3 },
+];
+
+function suggestMonster(amount) {
+  return MONSTER_SUGGESTIONS.find(s => amount <= s.maxAmount)
+      || MONSTER_SUGGESTIONS[MONSTER_SUGGESTIONS.length - 1];
+}
 
 // ── TITLES ───────────────────────────────────────────────────────────────────
 const TITLES = [
@@ -508,13 +553,209 @@ function trollSVG() {
   }, 5);
 }
 
+// ── SLIME (14w × 12h) ────────────────────────────────────────────────────────
+function slimeSVG() {
+  return spr([
+    '......hh......',
+    '....SSSSSS....',
+    '...SSSSSSSS...',
+    '..SSeSSSSeSS..',
+    '..SSSSSSSSSS..',
+    '..SSSkSSSSSS..',
+    '..SSSSSSSSSS..',
+    '...SSSSSSSS...',
+    '....SSSSSS....',
+    '.....ssss.....',
+    '......dd......',
+  ], { S:'#44cc44', s:'#229922', h:'#aaffaa', e:'#1a1a1a', k:'#003300', d:'#115511' });
+}
+
+// ── GHOST (14w × 16h) ────────────────────────────────────────────────────────
+function ghostSVG() {
+  return spr([
+    '......GG......',
+    '.....GGGG.....',
+    '....GGGGGG....',
+    '....GeGGeG....',
+    '....GGGGGG....',
+    '....GGmGGG....',
+    '....GGGGGG....',
+    '...GGGGGGGG...',
+    '...GGGGGGGG...',
+    '...GGGGGGGG...',
+    '..GGGGGGGGGG..',
+    '..GGGGGGGGGG..',
+    '..GGg.GGG.gG..',
+    '..G...GGG...G.',
+    '...G.......G..',
+  ], { G:'#ddeeff', g:'#99bbdd', e:'#ff3333', m:'#333344' });
+}
+
+// ── RAT (16w × 12h) ──────────────────────────────────────────────────────────
+function ratSVG() {
+  return spr([
+    '.e..e...........',
+    '.eR..RRRRR......',
+    '..RRRRRRRRn.....',
+    '..CCRRRRRRR.....',
+    '.CCCCCCCCCCCCCTT',
+    '.CCCCCCCCCCCCC..',
+    '.CCCCCCCCCCC....',
+    '..llll..llll....',
+    '..l......l......',
+  ], { R:'#cc9966', e:'#ffaaaa', n:'#ffccaa', C:'#aa7744', c:'#885522', T:'#cc8866', l:'#884422' });
+}
+
+// ── VAMPIRE (14w × 18h) ──────────────────────────────────────────────────────
+function vampireSVG() {
+  return spr([
+    '....hhhh......',
+    '...hFFFFFh....',
+    '...hFeFeFFh...',
+    '...hFFFFFFFh..',
+    '...hFfFFfFFh..',
+    '....VVVVVVV...',
+    '...VVVVVVVVV..',
+    '..VVVVVVVVVVV.',
+    '..VVVVVVVVVVV.',
+    '.VVVVVVVVVVVVV',
+    '.VVVVVVVVVVVVV',
+    '..VV.VVVVV.VV.',
+    '..VV..VVV..VV.',
+    '..VVV.....VVV.',
+    '..VVV.....VVV.',
+    '...vv.....vv..',
+    '...vv.....vv..',
+  ], { F:'#f0e0e8', h:'#220022', e:'#ff2020', f:'#fffcfc', V:'#330044', v:'#220033' });
+}
+
+// ── WITCH (14w × 22h) ────────────────────────────────────────────────────────
+function witchSVG() {
+  return spr([
+    '.......H......',
+    '......HHH.....',
+    '.....HHHHH....',
+    '....HHHHHHH...',
+    '...HHHHHHHHH..',
+    '..HHHHHHHHHHH.',
+    '...GgGGGGGgG..',
+    '...GGeGGeGGG..',
+    '...GGGGGGGGG..',
+    '...GGmGGGGGG..',
+    '....PPPPPPP...',
+    '...PPPPPPPPP..',
+    '..PPPPPPPPPPP.',
+    '.PPPPPPPPPPPPP',
+    '..PPP.....PPP.',
+    '..PPP.....PPP.',
+    '..PPP.....PPP.',
+    '..bbb.....bbb.',
+  ], { H:'#221122', G:'#c0a060', g:'#806030', e:'#ff4400', m:'#440000', P:'#6633aa', p:'#441188', b:'#1a1a1a' });
+}
+
+// ── SPIDER (18w × 12h) ───────────────────────────────────────────────────────
+function spiderSVG() {
+  return spr([
+    'l..l..........l..l',
+    '.l.l..........l.l.',
+    '....SSSSSSSSSS....',
+    '...SSSSeeeeSSSSS..',
+    '...SSSSSSSSSSSS...',
+    '....SSSSSSSSSS....',
+    '.l.l..........l.l.',
+    'l..l..........l..l',
+    '.l................',
+  ], { S:'#1a1a2a', e:'#ff3300', l:'#2a2a3a' });
+}
+
+// ── DRAGON (20w × 22h) ───────────────────────────────────────────────────────
+function dragonSVG() {
+  return spr([
+    '.........hh.........',
+    '........hDDh........',
+    '.......DDDDDD.......',
+    '......DDDeDeDD......',
+    '......DDDDDDDD......',
+    'WW....DDDDDDDD....WW',
+    'WWWW.DDDDDDDDDD.WWWW',
+    'WWWWWDDDDDDDDDDWWWWW',
+    'WW...DDDDDDDDDD...WW',
+    '.....DDDDDDDDDD.....',
+    '.....DDDDDDDDD......',
+    '....DDDDDDDDDDD.....',
+    '....DDDDDDDDDDD.....',
+    '.....DD.....DD......',
+    '.....DD.....DD......',
+    '.....dd.....dd......',
+    '......TTTTTTT.......',
+    '.......TTTTT........',
+    '........TTT.........',
+    '.........T..........',
+  ], { D:'#8B0000', d:'#5a0000', h:'#cc4400', e:'#ff8800', W:'#600000', T:'#6a0000' });
+}
+
+// ── GOLEM (16w × 18h) ────────────────────────────────────────────────────────
+function golemSVG() {
+  return spr([
+    '....GGGGGGGG....',
+    '....GGGGGGGG....',
+    '....GeGGGeGG....',
+    '....GcGGGcGG....',
+    '....GGGGGGGG....',
+    '..GGGGGGGGGGGG..',
+    '..GGGGGGGGGGGG..',
+    'GGGGGGGGGGGGGGGG',
+    'GGGGGGggGGGGGGGG',
+    'GGGGGGGGGGGGGGGG',
+    '..GGGGGGGGGGGG..',
+    '....GG....GG....',
+    '....GG....GG....',
+    '....GG....GG....',
+    '....gg....gg....',
+    '....gg....gg....',
+  ], { G:'#8a8070', g:'#5a5040', e:'#ff6600', c:'#6a6050' });
+}
+
+// ── OGRE (18w × 20h) ─────────────────────────────────────────────────────────
+function ogreSVG() {
+  return spr([
+    '....OOOOOOOOOO....',
+    '...OOOOOOOOOOOO...',
+    '..OOOOeOOeOOOOO..',
+    '..OOOOnnnnnOOOO..',
+    '..OOOOttttOOOOO..',
+    '..OOOOOOOOOOOOO..',
+    '.OOOOOOOOOOOOOOO.',
+    'BBBBBBBBBBBBBBBBBB',
+    'BBBBBBBBBBBBBBBBBB',
+    'BBBBBBBBBBBBBBBBBB',
+    '.BBBBBBBBBBBBBBBB.',
+    '..BBBBBBBBBBBBBB..',
+    '...BBBBB..BBBBB...',
+    '...BBBBB..BBBBB...',
+    '...BBBBB..BBBBB...',
+    '...BBBBB..BBBBB...',
+    '...bbbbb..bbbbb...',
+    '..bbbbbb..bbbbbb..',
+  ], { O:'#cc8844', e:'#ff2200', n:'#aa6622', t:'#ffe8c0', B:'#8a5530', b:'#5a3510' });
+}
+
 function enemySVG(type) {
   switch (type) {
     case 'goblin':  return goblinSVG();
+    case 'slime':   return slimeSVG();
+    case 'ghost':   return ghostSVG();
+    case 'rat':     return ratSVG();
     case 'specter': return specterSVG();
     case 'phantom': return phantomSVG();
     case 'imp':     return impSVG();
+    case 'vampire': return vampireSVG();
+    case 'witch':   return witchSVG();
+    case 'spider':  return spiderSVG();
     case 'troll':   return trollSVG();
+    case 'dragon':  return dragonSVG();
+    case 'golem':   return golemSVG();
+    case 'ogre':    return ogreSVG();
     default:        return goblinSVG();
   }
 }
@@ -1021,11 +1262,9 @@ function handleSummon(e) {
     floor,
     type,
     defeated: false,
-    taunts: [
-      `"${name} won't pay itself!"`,
-      '"You summoned me. Now deal with me."',
-      notes ? `"${notes}"` : '"Every day you wait, I grow stronger."',
-    ],
+    taunts: MONSTER_TAUNTS[type]
+      ? [...MONSTER_TAUNTS[type], notes ? `"${notes}"` : null].filter(Boolean)
+      : [`"${name} won't pay itself!"`, '"You summoned me. Now deal with me."', notes ? `"${notes}"` : '"Every day you wait, I grow stronger."'],
   };
 
   state.debts.push(newDebt);
@@ -1090,10 +1329,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('summon-form').addEventListener('submit', handleSummon);
 
-  // Auto-suggest floor from amount
+  // Auto-suggest floor + type from amount
   document.getElementById('s-amount').addEventListener('input', e => {
     const v = parseFloat(e.target.value) || 0;
-    document.getElementById('s-floor').value = v < 500 ? '1' : v < 2000 ? '2' : '3';
+    if (v > 0) {
+      const suggestion = suggestMonster(v);
+      document.getElementById('s-floor').value = String(suggestion.floor);
+      document.getElementById('s-type').value  = suggestion.type;
+    }
   });
 
   // Welcome message on first load
