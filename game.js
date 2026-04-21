@@ -269,6 +269,8 @@ const state = {
   playerClass:    'slayer',
   heroCustom:     { hair: null, skin: null, armor: null },
   pendingChest:   null,
+  manualScore:    null,
+  scoreUpdateDate:null,
 };
 
 // ── PERSISTENCE ───────────────────────────────────────────────────────────────
@@ -291,7 +293,9 @@ function save() {
     playerName:    state.playerName,
     playerClass:   state.playerClass,
     heroCustom:    state.heroCustom,
-    pendingChest:  state.pendingChest,
+    pendingChest:    state.pendingChest,
+    manualScore:     state.manualScore,
+    scoreUpdateDate: state.scoreUpdateDate,
   }));
 }
 
@@ -1186,6 +1190,7 @@ const MILESTONES = [
 ];
 
 function creditScore() {
+  if (state.manualScore !== null) return state.manualScore;
   const total = state.debts.reduce((s, d) => s + d.amount, 0);
   const pct   = total > 0 ? state.totalPaid / total : 0;
   return Math.round(600 + pct * 160);
@@ -1295,6 +1300,20 @@ function renderCastle() {
   document.getElementById('castle-milestones').innerHTML = MILESTONES.map(m =>
     `<div class="milestone ${score >= m.score ? 'reached' : ''}">${m.label} (${m.score})</div>`
   ).join('');
+
+  // Score update panel
+  const scoreInput = document.getElementById('score-input');
+  if (scoreInput && state.manualScore) scoreInput.value = state.manualScore;
+  const dateEl = document.getElementById('score-update-date');
+  if (dateEl) {
+    dateEl.textContent = state.scoreUpdateDate
+      ? `Last updated: ${state.scoreUpdateDate}${state.manualScore ? '' : ' (using estimated score)'}`
+      : 'Enter your real score to track actual credit progress';
+  }
+  // Update score line to show source
+  document.getElementById('castle-score-line').innerHTML =
+    `CREDIT SCORE: <span id="castle-score">${score}</span> / 760` +
+    (state.manualScore ? ' <span style="font-size:6px;color:var(--green)">[real]</span>' : ' <span style="font-size:6px;color:var(--dim)">[estimated]</span>');
 }
 
 function drawCastle(ctx, cx, groundY, reveal) {
@@ -1525,6 +1544,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('summon-form').addEventListener('submit', handleSummon);
   document.getElementById('onboarding-form').addEventListener('submit', handleOnboarding);
+
+  document.getElementById('score-update-btn').addEventListener('click', () => {
+    const val = parseInt(document.getElementById('score-input').value);
+    if (!val || val < 300 || val > 850) {
+      addLog('>> Credit score must be between 300 and 850.', 'system');
+      return;
+    }
+    state.manualScore     = val;
+    state.scoreUpdateDate = new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+    save();
+    renderCastle();
+    checkAchievements();
+    addLog(`📈 Credit score updated: ${val}`, 'event');
+  });
+  document.getElementById('score-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('score-update-btn').click();
+  });
 
   document.getElementById('he-name-btn').addEventListener('click', () => {
     const val = document.getElementById('he-name').value.trim();

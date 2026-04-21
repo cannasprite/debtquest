@@ -558,6 +558,28 @@ body::before {
 .milestone { font-size: 6px; padding: 4px 8px; border: 1px solid var(--border); color: var(--dim); }
 .milestone.reached { border-color: var(--gold); color: var(--gold); box-shadow: 0 0 8px var(--gold-glow); }
 
+/* ── SCORE UPDATE PANEL ── */
+#score-update-panel {
+  background: var(--panel); border: 2px solid var(--border); padding: 14px;
+  display: flex; flex-direction: column; gap: 8px; margin-top: 0;
+}
+#score-update-label { font-size: 8px; color: var(--gold); letter-spacing: 1px; }
+#score-update-sub   { font-size: 6px; color: var(--dim); }
+#score-update-row   { display: flex; gap: 8px; align-items: stretch; }
+#score-input {
+  flex: 1; background: var(--bg); border: 2px solid var(--border);
+  color: var(--text); padding: 9px; font-family: var(--font); font-size: 9px;
+  max-width: 160px; transition: border-color .12s, box-shadow .12s;
+}
+#score-input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 10px var(--gold-glow); }
+#score-update-btn {
+  background: var(--blue); color: #fff; border: 2px solid #1a4f6e;
+  padding: 9px 16px; font-family: var(--font); font-size: 8px; cursor: pointer;
+  letter-spacing: 1px; white-space: nowrap; transition: opacity .1s;
+}
+#score-update-btn:hover  { opacity: .88; }
+#score-update-date { font-size: 6px; color: var(--dim); }
+
 /* ── CODEX ── */
 .codex-section { background: var(--panel); border: 2px solid var(--border); padding: 12px; }
 .codex-heading {
