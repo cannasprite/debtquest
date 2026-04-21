@@ -33,6 +33,7 @@
       <button class="tab-btn" data-tab="castle">🏰 CASTLE</button>
       <button class="tab-btn" data-tab="codex">📜 CODEX</button>
       <button class="tab-btn" data-tab="summon">＋ SUMMON</button>
+      <button class="tab-btn" data-tab="hero">✏ HERO</button>
     </nav>
 
     <!-- ═══════════ DUNGEON TAB ═══════════ -->
@@ -176,6 +177,38 @@
       </div>
 
     </div>
+
+    <!-- ═══════════ HERO TAB ═══════════ -->
+    <div id="tab-hero" class="tab-panel">
+      <div id="hero-editor">
+        <div id="he-left">
+          <div id="he-sprite-wrap"></div>
+          <div id="he-hero-name"></div>
+          <div id="he-hero-class"></div>
+        </div>
+        <div id="he-right">
+          <div class="he-section">
+            <div class="he-label">HERO NAME</div>
+            <div class="he-name-row">
+              <input id="he-name" type="text" maxlength="20" placeholder="Enter name..." autocomplete="off">
+              <button id="he-name-btn">RENAME</button>
+            </div>
+          </div>
+          <div class="he-section">
+            <div class="he-label">HAIR COLOR</div>
+            <div class="he-swatches" id="he-hair"></div>
+          </div>
+          <div class="he-section">
+            <div class="he-label">SKIN TONE</div>
+            <div class="he-swatches" id="he-skin"></div>
+          </div>
+          <div class="he-section">
+            <div class="he-label">ARMOR COLOR</div>
+            <div class="he-swatches" id="he-armor"></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /tab-hero -->
 
   </div><!-- /#app -->
 

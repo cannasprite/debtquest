@@ -137,6 +137,37 @@ function suggestMonster(amount) {
       || MONSTER_SUGGESTIONS[MONSTER_SUGGESTIONS.length - 1];
 }
 
+// ── HERO CUSTOMIZATION PALETTES ──────────────────────────────────────────────
+const HAIR_COLORS = [
+  { id:'raven',    name:'Raven',    val:'#1a0a00', shadow:'#100500' },
+  { id:'brunette', name:'Brunette', val:'#4a2c0a', shadow:'#2a1400' },
+  { id:'auburn',   name:'Auburn',   val:'#7a3510', shadow:'#4a1a00' },
+  { id:'blonde',   name:'Blonde',   val:'#c8a040', shadow:'#886010' },
+  { id:'ginger',   name:'Ginger',   val:'#c84010', shadow:'#882000' },
+  { id:'silver',   name:'Silver',   val:'#9090a0', shadow:'#606070' },
+  { id:'white',    name:'White',    val:'#e0dce8', shadow:'#a0a0b0' },
+  { id:'violet',   name:'Violet',   val:'#6030a0', shadow:'#401870' },
+];
+
+const SKIN_TONES = [
+  { id:'fair',   name:'Fair',   val:'#fde4d0', shadow:'#d4a880' },
+  { id:'light',  name:'Light',  val:'#fdbcb4', shadow:'#d8907a' },
+  { id:'medium', name:'Medium', val:'#d4845a', shadow:'#a05830' },
+  { id:'tan',    name:'Tan',    val:'#b06030', shadow:'#803010' },
+  { id:'dark',   name:'Dark',   val:'#7a3a10', shadow:'#502208' },
+];
+
+const ARMOR_COLORS = [
+  { id:'steel',   name:'Steel',   val:'#9090a0', shadow:'#606070' },
+  { id:'gold',    name:'Gold',    val:'#d4a800', shadow:'#906000' },
+  { id:'crimson', name:'Crimson', val:'#901820', shadow:'#601010' },
+  { id:'forest',  name:'Forest',  val:'#286820', shadow:'#184010' },
+  { id:'ocean',   name:'Ocean',   val:'#205888', shadow:'#103060' },
+  { id:'void',    name:'Void',    val:'#281838', shadow:'#180c28' },
+  { id:'copper',  name:'Copper',  val:'#b05820', shadow:'#703010' },
+  { id:'rose',    name:'Rose',    val:'#9a3060', shadow:'#601840' },
+];
+
 // ── TITLES ───────────────────────────────────────────────────────────────────
 const TITLES = [
   { id: 'squire',   name: 'Squire of Debt',   minXP: 0,    gear: 'Cloth Armor | Wooden Sword',      tier: 0 },
@@ -226,6 +257,7 @@ const state = {
   equippedTitle:  'squire',
   playerName:     '',
   playerClass:    'slayer',
+  heroCustom:     { hair: null, skin: null, armor: null },
 };
 
 // ── PERSISTENCE ───────────────────────────────────────────────────────────────
@@ -247,6 +279,7 @@ function save() {
     equippedTitle: state.equippedTitle,
     playerName:    state.playerName,
     playerClass:   state.playerClass,
+    heroCustom:    state.heroCustom,
   }));
 }
 
@@ -383,15 +416,20 @@ function heroSVG(tier) {
     tier>=5  ? '...WBBBBBW..' : '....BBBBB....',
   ];
 
+  const c = state.heroCustom || {};
   const pal = {
-    S: SK, s: sk, E: EY,
-    H: T.H, h: T.h,
-    A: T.A, a: T.a,
+    S: c.skin?.val    || SK,
+    s: c.skin?.shadow || sk,
+    E: EY,
+    H: c.hair?.val    || T.H,
+    h: c.hair?.shadow || T.h,
+    A: c.armor?.val   || T.A,
+    a: c.armor?.shadow|| T.a,
     W: T.W, w: T.w,
-    X: T.cp || T.A,
+    X: T.cp || c.armor?.val || T.A,
     b: bl,
     P: PA, p: pa,
-    B: BT,
+    B: c.armor?.shadow || BT,
   };
   return spr(heroRows, pal, 5);
 }
@@ -1301,6 +1339,56 @@ function handleSummon(e) {
   selectEnemy(newDebt.id);
 }
 
+// ── HERO EDITOR ───────────────────────────────────────────────────────────────
+function buildSwatches(containerId, palette, key) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '';
+
+  // "Default" reset swatch
+  const reset = document.createElement('div');
+  reset.className = 'he-swatch he-swatch-reset' + (!state.heroCustom[key] ? ' selected' : '');
+  reset.title = 'Default (tier color)';
+  reset.textContent = '↺';
+  reset.addEventListener('click', () => {
+    state.heroCustom[key] = null;
+    save(); renderHeroEditor(); renderHero();
+  });
+  container.appendChild(reset);
+
+  palette.forEach(color => {
+    const el = document.createElement('div');
+    el.className = 'he-swatch' + (state.heroCustom[key]?.id === color.id ? ' selected' : '');
+    el.style.background = color.val;
+    el.title = color.name;
+    el.addEventListener('click', () => {
+      state.heroCustom[key] = color;
+      save(); renderHeroEditor(); renderHero();
+    });
+    container.appendChild(el);
+  });
+}
+
+function renderHeroEditor() {
+  const tier = getTitleForXP(state.xp).tier;
+  const wrap = document.getElementById('he-sprite-wrap');
+  if (wrap) wrap.innerHTML = heroSVG(tier);
+
+  const nameEl = document.getElementById('he-hero-name');
+  if (nameEl) nameEl.textContent = state.playerName || 'SPRITE';
+
+  const classLabels = { slayer: '⚔ Debt Slayer', mage: '🔮 Budget Mage', rogue: '🗡 Frugal Rogue' };
+  const clsEl = document.getElementById('he-hero-class');
+  if (clsEl) clsEl.textContent = classLabels[state.playerClass] || '';
+
+  const nameInput = document.getElementById('he-name');
+  if (nameInput) nameInput.value = state.playerName || '';
+
+  buildSwatches('he-hair',  HAIR_COLORS,  'hair');
+  buildSwatches('he-skin',  SKIN_TONES,   'skin');
+  buildSwatches('he-armor', ARMOR_COLORS, 'armor');
+}
+
 // ── ONBOARDING ────────────────────────────────────────────────────────────────
 function showOnboarding() {
   document.getElementById('onboarding-overlay').classList.remove('hidden');
@@ -1340,6 +1428,7 @@ function switchTab(name) {
   document.querySelector(`.tab-btn[data-tab="${name}"]`).classList.add('active');
   if (name === 'castle') renderCastle();
   if (name === 'codex')  renderCodex();
+  if (name === 'hero')   renderHeroEditor();
 }
 
 function selectEnemy(id) {
@@ -1383,6 +1472,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('summon-form').addEventListener('submit', handleSummon);
   document.getElementById('onboarding-form').addEventListener('submit', handleOnboarding);
+
+  document.getElementById('he-name-btn').addEventListener('click', () => {
+    const val = document.getElementById('he-name').value.trim();
+    if (!val) return;
+    state.playerName = val;
+    save(); renderHeroEditor(); renderHero();
+    addLog(`✏ Name changed to: ${val}`, 'system');
+  });
+  document.getElementById('he-name').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('he-name-btn').click();
+  });
 
   // Auto-suggest floor + type from amount
   document.getElementById('s-amount').addEventListener('input', e => {
