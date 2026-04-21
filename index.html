@@ -376,15 +376,42 @@
       </div>
     </div>
 
-    <!-- ═══ SCREEN 3: MONSTERS (stub — built next) ═══ -->
+    <!-- ═══ SCREEN 3: MONSTERS ═══ -->
     <div class="ob-screen" id="ob-screen-3">
-      <div class="ob-panel">
-        <div class="ob-screen-heading">ENTER YOUR MONSTERS</div>
-        <p class="ob-stub-note">Name your debts. Each one becomes a monster in the dungeon.</p>
-        <p class="ob-stub-note ob-stub-dim">Full monster-entry screen coming soon — your debts are already loaded.</p>
+      <div class="ob-panel ob3-panel">
+        <div class="ob2-heading-wrap">
+          <div class="ob2-rule"></div>
+          <div class="ob-screen-heading">ENTER YOUR MONSTERS</div>
+          <div class="ob2-rule ob2-rule-r"></div>
+        </div>
+        <p class="ob3-sub">Name each debt — it spawns a monster in the dungeon.</p>
+
+        <div class="ob3-form">
+          <div class="ob3-inputs-row">
+            <div class="ob-field ob3-name-field">
+              <label class="ob-label" for="ob3-debt-name">DEBT NAME</label>
+              <input class="ob-input" id="ob3-debt-name" type="text" maxlength="32" placeholder="e.g. Student Loan">
+            </div>
+            <div class="ob-field ob3-amount-field">
+              <label class="ob-label" for="ob3-debt-amount">AMOUNT ($)</label>
+              <input class="ob-input" id="ob3-debt-amount" type="number" min="1" step="any" placeholder="0">
+            </div>
+          </div>
+
+          <div class="ob3-preview" id="ob3-preview">
+            <span class="ob3-preview-icon" id="ob3-preview-icon">⚔</span>
+            <span class="ob3-preview-text" id="ob3-preview-label">Enter an amount to reveal your foe</span>
+          </div>
+
+          <button class="ob3-add-btn" id="ob3-add-btn">＋ ADD MONSTER</button>
+        </div>
+
+        <div id="ob3-debt-list" class="ob3-debt-list"></div>
+        <div id="ob3-empty-hint" class="ob3-empty-hint">No monsters yet — add at least one debt to continue.</div>
+
         <div class="ob-nav-row">
           <button class="ob-back-btn" id="ob3-back">← BACK</button>
-          <button class="ob-cta ob-cta-sm" id="ob3-next">CONTINUE →</button>
+          <button class="ob-cta ob-cta-sm" id="ob3-next">CONTINUE WHEN READY →</button>
         </div>
       </div>
     </div>

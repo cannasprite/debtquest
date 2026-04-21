@@ -982,6 +982,71 @@ body::before {
 }
 .ob-back-btn:hover { border-color: var(--gold-dim); color: var(--text); }
 
+/* ── SCREEN 3: MONSTERS ── */
+#ob-screen-3 {
+  background:
+    radial-gradient(ellipse at 10% 50%, rgba(80,20,0,.18) 0%, transparent 55%),
+    radial-gradient(ellipse at 90% 50%, rgba(80,20,0,.18) 0%, transparent 55%),
+    rgba(3,3,12,.94);
+}
+.ob3-panel { max-width: 580px; }
+.ob3-sub { font-size: 7px; color: var(--dim); text-align: center; line-height: 2; margin: 0; }
+
+.ob3-form { display: flex; flex-direction: column; gap: 10px; }
+.ob3-inputs-row { display: flex; gap: 10px; }
+.ob3-name-field { flex: 2; }
+.ob3-amount-field { flex: 1; }
+
+.ob3-preview {
+  display: flex; align-items: center; gap: 12px;
+  background: rgba(255,215,0,.04); border: 1px solid rgba(255,215,0,.15);
+  padding: 10px 14px; min-height: 44px; transition: all .2s;
+}
+.ob3-preview-icon { font-size: 24px; line-height: 1; transition: transform .2s; }
+.ob3-preview-text { font-size: 7px; color: var(--dim); letter-spacing: 1px; transition: color .2s; }
+.ob3-preview.has-monster .ob3-preview-text { color: var(--gold); }
+.ob3-preview.has-monster { border-color: rgba(255,215,0,.35); background: rgba(255,215,0,.07); }
+.ob3-preview.has-monster .ob3-preview-icon { transform: scale(1.15); }
+
+.ob3-add-btn {
+  background: rgba(255,215,0,.08); border: 2px solid var(--gold-dim);
+  color: var(--gold); font-family: var(--font); font-size: 7px;
+  padding: 10px; letter-spacing: 1px; cursor: pointer;
+  transition: background .12s, border-color .12s, box-shadow .12s;
+}
+.ob3-add-btn:hover {
+  background: rgba(255,215,0,.15); border-color: var(--gold);
+  box-shadow: 0 0 10px rgba(255,215,0,.15);
+}
+
+.ob3-debt-list { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
+.ob3-debt-row {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.08);
+  padding: 8px 10px; animation: modal-in .15s ease;
+}
+.ob3-debt-icon { font-size: 22px; flex-shrink: 0; }
+.ob3-debt-info { flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.ob3-debt-name { font-size: 7px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ob3-debt-meta { font-size: 5px; color: var(--dim); letter-spacing: .5px; text-transform: uppercase; }
+.ob3-debt-amount { font-size: 7px; color: var(--gold); flex-shrink: 0; }
+.ob3-remove-btn {
+  background: none; border: 1px solid rgba(231,76,60,.3); color: rgba(231,76,60,.5);
+  font-size: 8px; padding: 2px 6px; cursor: pointer; flex-shrink: 0;
+  font-family: monospace; transition: all .1s;
+}
+.ob3-remove-btn:hover { border-color: var(--red); color: var(--red); }
+
+.ob3-empty-hint { font-size: 6px; color: var(--dim); text-align: center; letter-spacing: .5px; line-height: 2; }
+.ob3-empty-hint.ob3-shake { animation: ob3-shake .4s ease; }
+@keyframes ob3-shake {
+  0%,100% { transform: translateX(0); }
+  20%     { transform: translateX(-6px); }
+  40%     { transform: translateX(6px); }
+  60%     { transform: translateX(-4px); }
+  80%     { transform: translateX(4px); }
+}
+
 #ob5-preview   { margin: 8px 0; }
 #ob5-hero-name { font-size: 12px; color: var(--gold); letter-spacing: 2px; }
 #ob5-stats     { font-size: 6px; color: var(--dim); line-height: 2.5; margin-bottom: 6px; }

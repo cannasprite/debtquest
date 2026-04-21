@@ -1542,7 +1542,13 @@ function renderHeroEditor() {
 }
 
 // ── ONBOARDING STATE MACHINE ──────────────────────────────────────────────────
-const OB = { step: 1 };
+const OB = { step: 1, debts: [] };
+
+const MONSTER_ICONS = {
+  rat: '🐀', slime: '🫧', ghost: '👻', goblin: '👺',
+  imp: '😈', vampire: '🧛', witch: '🧙', spider: '🕷',
+  troll: '👹', dragon: '🐉', golem: '⛏', ogre: '👾',
+};
 
 function torchSVG() {
   return spr([
@@ -1586,6 +1592,83 @@ function obInitScreen2() {
   setTimeout(() => document.getElementById('ob-name')?.focus(), 180);
 }
 
+function obUpdateMonsterPreview() {
+  const amt    = parseFloat(document.getElementById('ob3-debt-amount')?.value) || 0;
+  const iconEl = document.getElementById('ob3-preview-icon');
+  const lblEl  = document.getElementById('ob3-preview-label');
+  const wrap   = document.getElementById('ob3-preview');
+  if (!iconEl || !lblEl) return;
+  if (amt <= 0) {
+    iconEl.textContent = '⚔';
+    lblEl.textContent  = 'Enter an amount to reveal your foe';
+    wrap?.classList.remove('has-monster');
+    return;
+  }
+  const s = suggestMonster(amt);
+  iconEl.textContent = MONSTER_ICONS[s.type] || '👹';
+  lblEl.textContent  = `${s.type.toUpperCase()} · Floor ${s.floor}`;
+  wrap?.classList.add('has-monster');
+}
+
+function obRenderDebtList() {
+  const list = document.getElementById('ob3-debt-list');
+  const hint = document.getElementById('ob3-empty-hint');
+  if (!list) return;
+  if (OB.debts.length === 0) {
+    list.innerHTML = '';
+    if (hint) hint.style.display = '';
+    return;
+  }
+  if (hint) hint.style.display = 'none';
+  list.innerHTML = OB.debts.map((d, i) => `
+    <div class="ob3-debt-row" data-idx="${i}">
+      <span class="ob3-debt-icon">${MONSTER_ICONS[d.type] || '👹'}</span>
+      <span class="ob3-debt-info">
+        <span class="ob3-debt-name">${d.name}</span>
+        <span class="ob3-debt-meta">${d.type} · Floor ${d.floor}</span>
+      </span>
+      <span class="ob3-debt-amount">${fmt(d.amount)}</span>
+      <button class="ob3-remove-btn" data-idx="${i}" title="Remove">✕</button>
+    </div>
+  `).join('');
+  list.querySelectorAll('.ob3-remove-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      OB.debts.splice(parseInt(btn.dataset.idx), 1);
+      obRenderDebtList();
+    });
+  });
+}
+
+function obAddDebt() {
+  const nameEl   = document.getElementById('ob3-debt-name');
+  const amountEl = document.getElementById('ob3-debt-amount');
+  const name   = nameEl?.value.trim();
+  const amount = parseFloat(amountEl?.value);
+  if (!name)           { nameEl?.focus();   return; }
+  if (!amount || amount <= 0) { amountEl?.focus(); return; }
+  const s = suggestMonster(amount);
+  OB.debts.push({
+    id:           `ob_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    name, amount,
+    type:         s.type,
+    floor:        s.floor,
+    hp:           amount, maxHp: amount,
+    defeated:     false,
+    chestsOpened: [],
+  });
+  if (nameEl)   nameEl.value   = '';
+  if (amountEl) amountEl.value = '';
+  nameEl?.focus();
+  obRenderDebtList();
+  obUpdateMonsterPreview();
+}
+
+function obInitScreen3() {
+  obRenderDebtList();
+  obUpdateMonsterPreview();
+  setTimeout(() => document.getElementById('ob3-debt-name')?.focus(), 180);
+}
+
 function obGoTo(n) {
   document.querySelectorAll('.ob-screen').forEach(s => s.classList.remove('active'));
   document.getElementById(`ob-screen-${n}`).classList.add('active');
@@ -1597,6 +1680,7 @@ function obGoTo(n) {
   OB.step = n;
   if (n === 1) obInitScreen1();
   if (n === 2) obInitScreen2();
+  if (n === 3) obInitScreen3();
   if (n === 5) obRenderScreen5();
 }
 
@@ -1611,6 +1695,14 @@ function obFinish() {
 
   state.playerName  = name;
   state.playerClass = cls;
+
+  if (OB.debts.length > 0) {
+    const existing = state.debts.filter(d => !d.id.startsWith('ob_'));
+    state.debts = [...OB.debts, ...existing];
+    const first = state.debts.find(d => !d.defeated) || state.debts[0];
+    if (first) { state.activeEnemyId = first.id; state.currentFloor = first.floor; }
+  }
+
   document.getElementById('onboarding-overlay').classList.add('hidden');
   save(); render();
 
@@ -1631,7 +1723,8 @@ function obFinish() {
 function obRenderScreen5() {
   const name   = document.getElementById('ob-name')?.value.trim() || 'SPRITE';
   const cls    = document.querySelector('input[name="ob-class"]:checked')?.value || 'slayer';
-  const total  = state.debts.reduce((s, d) => s + d.amount, 0);
+  const debts  = OB.debts.length > 0 ? OB.debts : state.debts;
+  const total  = debts.reduce((s, d) => s + d.amount, 0);
   const clsLbl = { slayer: 'Debt Slayer', mage: 'Budget Mage', rogue: 'Frugal Rogue' };
 
   const prev = document.getElementById('ob5-preview');
@@ -1639,7 +1732,7 @@ function obRenderScreen5() {
   const st   = document.getElementById('ob5-stats');
   if (prev) prev.innerHTML = state.heroStyle === 'lady' ? heroFemSVG(0) : heroSVG(0);
   if (nm)   nm.textContent  = name;
-  if (st)   st.innerHTML    = `${clsLbl[cls] || 'Hero'}<br>${state.debts.length} monsters await &nbsp;·&nbsp; ${fmt(total)} total debt`;
+  if (st)   st.innerHTML    = `${clsLbl[cls] || 'Hero'}<br>${debts.length} monster${debts.length !== 1 ? 's' : ''} await &nbsp;·&nbsp; ${fmt(total)} total debt`;
 }
 
 function switchTab(name) {
@@ -1704,7 +1797,18 @@ document.addEventListener('DOMContentLoaded', () => {
     obGoTo(3);
   });
   document.getElementById('ob3-back').addEventListener('click',  () => obGoTo(2));
-  document.getElementById('ob3-next').addEventListener('click',  () => obGoTo(4));
+  document.getElementById('ob3-next').addEventListener('click',  () => {
+    if (OB.debts.length === 0) {
+      const hint = document.getElementById('ob3-empty-hint');
+      if (hint) { hint.classList.remove('ob3-shake'); void hint.offsetWidth; hint.classList.add('ob3-shake'); }
+      return;
+    }
+    obGoTo(4);
+  });
+  document.getElementById('ob3-add-btn').addEventListener('click', obAddDebt);
+  document.getElementById('ob3-debt-amount').addEventListener('input', obUpdateMonsterPreview);
+  document.getElementById('ob3-debt-name').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('ob3-debt-amount')?.focus(); });
+  document.getElementById('ob3-debt-amount').addEventListener('keydown', e => { if (e.key === 'Enter') obAddDebt(); });
   document.getElementById('ob4-back').addEventListener('click',  () => obGoTo(3));
   document.getElementById('ob4-next').addEventListener('click',  () => { obRenderScreen5(); obGoTo(5); });
   document.getElementById('ob5-back').addEventListener('click',  () => obGoTo(4));
